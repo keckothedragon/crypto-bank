@@ -1,19 +1,32 @@
 import discord
+from discord.ext import commands
 from dotenv import load_dotenv
 import os
 import constants
+import json
+
+def json_read(path: str) -> dict:
+    with open(f"{path}", "r") as f:
+        data: dict = json.load(f)
+    return data
+
+
+def json_write(path: str, data: dict) -> None:
+    with open(f"{path}", "w") as f:
+        json.dump(data, path)
 
 load_dotenv(".env")
 
-client = discord.Client(intents=constants.intents)
+client = commands.Bot(intents=constants.intents, command_prefix=constants.prefix)
 
-@client.event
-async def on_ready():
-    print(f"We have logged in as {client.user}")
+@commands.Command
+async def hello(ctx, times=1):
+    msg = ""
+    for _ in range(times):
+        msg += "Hello "
+    msg = msg.strip()
+    await ctx.send(msg)
 
-@client.event
-async def on_message(message):
-    if message.content == '$hello':
-        await message.channel.send("HELLO!!")
+client.add_command(hello)
 
 client.run(os.getenv("TOKEN"))
