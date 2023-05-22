@@ -37,9 +37,12 @@ async def showCrypto(ctx, crypto=""):
         await ctx.send("Invalid crypro name.")
         return
     bank = coins[crypto]["Bank"]
+    bank = [[value, key] for key, value in bank.items()]
+    # reversing key value pairs to sort
+    bank.sort(reverse=True)
     msg = ""
-    for key, value in bank.items():
-        msg += f"{key}: {value}\n"
+    for user in bank:
+        msg += f"{user[1]}: {user[0]}\n"
     msg = msg.strip('\n')
     await ctx.send(msg)
 
