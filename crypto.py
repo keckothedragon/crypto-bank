@@ -82,6 +82,9 @@ async def createCrypto(ctx, cryptoName=""):
         if ctx.author.id == value["Owner"]:
             await ctx.send(f"You already own a crypto: {key}")
             return
+    if cryptoName in coins:
+        await ctx.send("A crypto with this name already exists.")
+        return
     
     coins[cryptoName] = {"Owner": ctx.author.id, "Bank": {}}
 
