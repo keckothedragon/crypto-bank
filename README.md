@@ -2,8 +2,6 @@
 ## Setup
 Thank you for downloading the code for my bot, Crypto Bank! Crypto Bank allows you to keep track of made up points with others in your Discord servers. I chose to call it Crypto Bank because it started as a joke with friends where each person had their own CryptoCurrency (ex. "John Coin", "Bob Coin", etc.).
 
-Before you run the code, run the script "setup.py" to create "confirmation.pickle" and "crypto.json" files. (This is now optional, but still encouraged)
-
 ## Explanation of commands / Usage
 Here is a detailed explanation of each command available (in the order they appear in the file):
 

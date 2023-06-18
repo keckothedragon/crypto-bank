@@ -4,9 +4,7 @@ intents = discord.Intents.all()
 
 prefix = "$"
 
-jsonFilePath = "./crypto.json"
-
-pickleFilePath = "./confirmation.pickle"
+dataPath = "./data/"
 
 helpMsg = f"Commands (do not include brackets around arguments):\n\
 * {prefix}showCrypto [name]: Shows standings for a specific crypto.\n\

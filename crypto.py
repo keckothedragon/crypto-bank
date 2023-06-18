@@ -14,7 +14,7 @@ async def showCrypto(ctx, crypto=""):
     if crypto == "":
         await ctx.send(f"Usage: {constants.prefix}showCrypto [name of crypto]")
         return
-    coins = fileHelper.json_read(constants.jsonFilePath)
+    coins = fileHelper.json_read(constants.dataPath + str(str(ctx.guild.id)) + "-crypto.json")
     if crypto not in coins:
         await ctx.send(f"Invalid crypto name. To see a list of all crypto, use {constants.prefix}listCrypto.")
         return
@@ -40,7 +40,7 @@ async def addCrypto(ctx, target="", val=None):
         val = int(val)
     except ValueError:
         await ctx.send(f"Usage: {constants.prefix}addCrypto: [target] [value]")
-    coins = fileHelper.json_read(constants.jsonFilePath)
+    coins = fileHelper.json_read(constants.dataPath + str(str(ctx.guild.id)) + "-crypto.json")
     userCoin = ""
     for key, value in coins.items():
         if ctx.author.id == value["Owner"]:
@@ -53,7 +53,7 @@ async def addCrypto(ctx, target="", val=None):
     else:
         coins[userCoin]["Bank"][target] = val
 
-    fileHelper.json_write(constants.jsonFilePath, coins)
+    fileHelper.json_write(constants.dataPath + str(ctx.guild.id) + "-crypto.json", coins)
     num = coins[userCoin]["Bank"][target]
     await ctx.send(f"{val} coins added to {target}.\nThey now have {num} coins.")
 
@@ -65,7 +65,7 @@ async def setCrypto(ctx, target="", val=None):
         val = int(val)
     except ValueError:
         await ctx.send(f"Usage: {constants.prefix}setCrypto [target] [val]")
-    coins = fileHelper.json_read(constants.jsonFilePath)
+    coins = fileHelper.json_read(constants.dataPath + str(ctx.guild.id) + "-crypto.json")
     userCoin = ""
     for key, value in coins.items():
         if ctx.author.id == value["Owner"]:
@@ -75,7 +75,7 @@ async def setCrypto(ctx, target="", val=None):
         return
     coins[userCoin]["Bank"][target] = val
 
-    fileHelper.json_write(constants.jsonFilePath, coins)
+    fileHelper.json_write(constants.dataPath + str(ctx.guild.id) + "-crypto.json", coins)
     num = coins[userCoin]["Bank"][target]
     await ctx.send(f"Succesfully set {target}'s coins to {num}.")
 
@@ -84,7 +84,7 @@ async def createCrypto(ctx, cryptoName=""):
     if cryptoName == "":
         await ctx.send(f"Usage: {constants.prefix}createCrypto [name]")
         return
-    coins = fileHelper.json_read(constants.jsonFilePath)
+    coins = fileHelper.json_read(constants.dataPath + str(ctx.guild.id) + "-crypto.json")
     for key, value in coins.items():
         if ctx.author.id == value["Owner"]:
             await ctx.send(f"You already own a crypto: {key}")
@@ -95,13 +95,13 @@ async def createCrypto(ctx, cryptoName=""):
     
     coins[cryptoName] = {"Owner": ctx.author.id, "Bank": {}}
 
-    fileHelper.json_write(constants.jsonFilePath, coins)
+    fileHelper.json_write(constants.dataPath + str(ctx.guild.id) + "-crypto.json", coins)
 
     await ctx.send(f"{cryptoName} was succesfully created.")
 
 @commands.Command
 async def deleteCrypto(ctx):
-    coins = fileHelper.json_read(constants.jsonFilePath)
+    coins = fileHelper.json_read(constants.dataPath + str(ctx.guild.id) + "-crypto.json")
     userOwn = False
     for coin in coins:
         if coins[coin]["Owner"] == ctx.author.id:
@@ -110,46 +110,46 @@ async def deleteCrypto(ctx):
         await ctx.send(f"You do not own a crypto. You can create one with {constants.prefix}createCrypto.")
         return
 
-    confirmation: set = fileHelper.pickle_read(constants.pickleFilePath)
+    confirmation: set = fileHelper.pickle_read(constants.dataPath + str(ctx.guild.id) + "-confirmation.pickle")
     if ctx.author.id in confirmation:
         await ctx.send(f"You still have an unconfirmed command. Please run {constants.prefix}confirmDeletion to confirm or {constants.prefix}cancelDeletion to cancel.")
         return
     confirmation.add(ctx.author.id)
-    fileHelper.pickle_write(constants.pickleFilePath, confirmation)
+    fileHelper.pickle_write(constants.dataPath + str(ctx.guild.id) + "-confirmation.pickle", confirmation)
     await ctx.send(f"This is a dangerous command. Please run {constants.prefix}confirmDeletion to confirm deletion.")
 
 @commands.Command
 async def confirmDeletion(ctx):
-    confirmation: set = fileHelper.pickle_read(constants.pickleFilePath)
+    confirmation: set = fileHelper.pickle_read(constants.dataPath + str(ctx.guild.id) + "-confirmation.pickle")
     if ctx.author.id not in confirmation:
         await ctx.send(f"There is nothing awaiting confirmation.")
         return
-    coins = fileHelper.json_read(constants.jsonFilePath)
+    coins = fileHelper.json_read(constants.dataPath + str(ctx.guild.id) + "-crypto.json")
     for key, value in coins.items():
         if value["Owner"] == ctx.author.id:
             del coins[key]
             break
 
-    fileHelper.json_write(constants.jsonFilePath, coins)
+    fileHelper.json_write(constants.dataPath + str(ctx.guild.id) + "-crypto.json", coins)
 
     confirmation.remove(ctx.author.id)
-    fileHelper.pickle_write(constants.pickleFilePath, confirmation)
+    fileHelper.pickle_write(constants.dataPath + str(ctx.guild.id) + "-confirmation.pickle", confirmation)
 
     await ctx.send(f"Successfully deleted \"{key}\".")
 
 @commands.Command
 async def cancelDeletion(ctx):
-    confirmation = fileHelper.pickle_read(constants.pickleFilePath)
+    confirmation = fileHelper.pickle_read(constants.dataPath + str(ctx.guild.id) + "-confirmation.pickle")
     if ctx.author.id not in confirmation:
         await ctx.send("There is nothing awaiting confirmation.")
         return
     confirmation.remove(ctx.author.id)
-    fileHelper.pickle_write(constants.pickleFilePath, confirmation)
+    fileHelper.pickle_write(constants.dataPath + str(ctx.guild.id) + "-confirmation.pickle", confirmation)
     await ctx.send(f"Cancelled deletion.")
 
 @commands.Command
 async def listCrypto(ctx):
-    coins = fileHelper.json_read(constants.jsonFilePath)
+    coins = fileHelper.json_read(constants.dataPath + str(str(ctx.guild.id)) + "-crypto.json")
     msg = "\n".join([str(coin) for coin in coins])
     if not msg:
         msg = "No crypto to list."
@@ -161,7 +161,7 @@ async def deleteUser(ctx, target=""):
         await ctx.send(f"Usage: {constants.prefix}deleteUser [target]")
         return
     
-    coins = fileHelper.json_read(constants.jsonFilePath)
+    coins = fileHelper.json_read(constants.dataPath + str(str(ctx.guild.id)) + "-crypto.json")
     userCoin = ""
     for key, value in coins.items():
         if ctx.author.id == value["Owner"]: 
@@ -175,7 +175,7 @@ async def deleteUser(ctx, target=""):
         return
     
     poppedData = coins[userCoin]["Bank"].pop(target)
-    fileHelper.json_write(constants.jsonFilePath, coins)
+    fileHelper.json_write(constants.dataPath + str(str(ctx.guild.id)) + "-crypto.json", coins)
     await ctx.send(f"Successfully removed {target} from your crypto.\n{target} had {poppedData} coins.")
 
 @commands.Command
@@ -190,7 +190,7 @@ async def transferCrypto(ctx, userFrom="", userTo="", amount=None):
         await ctx.send(f"Usage: {constants.prefix}transferCrypto [userFrom] [userTo] [amount]")
         return
 
-    coins = fileHelper.json_read(constants.jsonFilePath)
+    coins = fileHelper.json_read(constants.dataPath + str(str(ctx.guild.id)) + "-crypto.json")
     userCoin = ""
     for key, value in coins.items():
         if ctx.author.id == value["Owner"]:
@@ -211,7 +211,7 @@ async def transferCrypto(ctx, userFrom="", userTo="", amount=None):
     coins[userCoin]["Bank"][userFrom] -= amount
     coins[userCoin]["Bank"][userTo] += amount
 
-    fileHelper.json_write(constants.jsonFilePath, coins)
+    fileHelper.json_write(constants.dataPath + str(str(ctx.guild.id)) + "-crypto.json", coins)
     await ctx.send(f"Successfully transferred {amount} coins from {userFrom} to {userTo}.\n" +
                    f"{userFrom} now has {coins[userCoin]['Bank'][userFrom]} coins.\n" +
                    f"{userTo} now has {coins[userCoin]['Bank'][userTo]} coins.")
