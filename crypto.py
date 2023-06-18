@@ -31,10 +31,15 @@ async def showCrypto(ctx, crypto=""):
     await ctx.send(msg)
 
 @commands.Command
-async def addCrypto(ctx, target="", val=0):
-    if target == "":
+async def addCrypto(ctx, target="", val=None):
+    if target == "" or val is None:
         await ctx.send(f"Usage: {constants.prefix}addCrypto: [target] [value]")
         return
+    try:
+        # making sure user didnt pass args in wrong order
+        val = int(val)
+    except ValueError:
+        await ctx.send(f"Usage: {constants.prefix}addCrypto: [target] [value]")
     coins = fileHelper.json_read(constants.jsonFilePath)
     userCoin = ""
     for key, value in coins.items():
@@ -51,6 +56,28 @@ async def addCrypto(ctx, target="", val=0):
     fileHelper.json_write(constants.jsonFilePath, coins)
     num = coins[userCoin]["Bank"][target]
     await ctx.send(f"{val} coins added to {target}.\nThey now have {num} coins.")
+
+@commands.Command
+async def setCrypto(ctx, target="", val=None):
+    if target == "" or val is None:
+        await ctx.send(f"Usage: {constants.prefix}setCrypto [target] [val]")
+    try:
+        val = int(val)
+    except ValueError:
+        await ctx.send(f"Usage: {constants.prefix}setCrypto [target] [val]")
+    coins = fileHelper.json_read(constants.jsonFilePath)
+    userCoin = ""
+    for key, value in coins.items():
+        if ctx.author.id == value["Owner"]:
+            userCoin = key
+    if userCoin == "":
+        await ctx.send(f"You do not own a crypto. You can create one with {constants.prefix}createCrypto.")
+        return
+    coins[userCoin]["Bank"][target] = val
+
+    fileHelper.json_write(constants.jsonFilePath, coins)
+    num = coins[userCoin]["Bank"][target]
+    await ctx.send(f"Succesfully set {target}'s coins to {num}.")
 
 @commands.Command
 async def createCrypto(ctx, cryptoName=""):
@@ -129,16 +156,80 @@ async def listCrypto(ctx):
     await ctx.send(msg)
 
 @commands.Command
+async def deleteUser(ctx, target=""):
+    if target == "":
+        await ctx.send(f"Usage: {constants.prefix}deleteUser [target]")
+        return
+    
+    coins = fileHelper.json_read(constants.jsonFilePath)
+    userCoin = ""
+    for key, value in coins.items():
+        if ctx.author.id == value["Owner"]: 
+            userCoin = key
+    
+    if userCoin == "":
+        await ctx.send(f"You do not currently own a crypto. You can create one with {constants.prefix}createCrypto.")
+
+    if target not in coins[userCoin]["Bank"]:
+        await ctx.send(f"{target} does not have any of your crypto.")
+        return
+    
+    poppedData = coins[userCoin]["Bank"].pop(target)
+    fileHelper.json_write(constants.jsonFilePath, coins)
+    await ctx.send(f"Successfully removed {target} from your crypto.\n{target} had {poppedData} coins.")
+
+@commands.Command
+async def transferCrypto(ctx, userFrom="", userTo="", amount=None):
+    if userFrom == "" or userTo == "" or amount is None:
+        await ctx.send(f"Usage: {constants.prefix}transferCrypto [userFrom] [userTo] [amount]")
+        return
+
+    try:
+        amount = int(amount)
+    except ValueError:
+        await ctx.send(f"Usage: {constants.prefix}transferCrypto [userFrom] [userTo] [amount]")
+        return
+
+    coins = fileHelper.json_read(constants.jsonFilePath)
+    userCoin = ""
+    for key, value in coins.items():
+        if ctx.author.id == value["Owner"]:
+            userCoin = key
+    if userCoin == "":
+        await ctx.send(f"You do not own a crypto. You can create one with {constants.prefix}createCrypto.")
+        return
+    if userFrom not in coins[userCoin]["Bank"]:
+        await ctx.send(f"{userFrom} does not have any of your crypto.")
+        return
+    if userTo not in coins[userCoin]["Bank"]:
+        await ctx.send(f"{userTo} does not have any of your crypto. To confirm transfer, use the command \"{constants.prefix}setCrypto {userTo} 0\" first.")
+        return
+    if coins[userCoin]["Bank"][userFrom] < amount:
+        userFromAmt = coins[userCoin]["Bank"][userFrom]
+        await ctx.send(f"{userFrom} only has {userFromAmt} coins. Please try again with a lower amount.")
+        return
+    coins[userCoin]["Bank"][userFrom] -= amount
+    coins[userCoin]["Bank"][userTo] += amount
+
+    fileHelper.json_write(constants.jsonFilePath, coins)
+    await ctx.send(f"Successfully transferred {amount} coins from {userFrom} to {userTo}.\n" +
+                   f"{userFrom} now has {coins[userCoin]['Bank'][userFrom]} coins.\n" +
+                   f"{userTo} now has {coins[userCoin]['Bank'][userTo]} coins.")
+    
+@commands.Command
 async def cryptoHelp(ctx):
     await ctx.send(constants.helpMsg)
 
 client.add_command(showCrypto)
 client.add_command(addCrypto)
+client.add_command(setCrypto)
 client.add_command(createCrypto)
 client.add_command(deleteCrypto)
 client.add_command(confirmDeletion)
 client.add_command(cancelDeletion)
-client.add_command(cryptoHelp)
 client.add_command(listCrypto)
+client.add_command(deleteUser)
+client.add_command(transferCrypto)
+client.add_command(cryptoHelp)
 
 client.run(os.getenv("TOKEN"))
