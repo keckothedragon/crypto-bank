@@ -35,7 +35,7 @@ async def showCrypto(ctx, crypto=""):
     await ctx.send(msg)
 
 @commands.Command
-async def addCrypto(ctx, target="", val=None):
+async def addCrypto(ctx, target="", val=None, *reason: tuple):
     if target == "" or val is None:
         await ctx.send(f"Usage: {constants.prefix}addCrypto: [target] [value]")
         return
@@ -63,10 +63,18 @@ async def addCrypto(ctx, target="", val=None):
 
     fileHelper.json_write(constants.dataPath + str(id) + "-crypto.json", coins)
     num = coins[userCoin]["Bank"][target]
-    await ctx.send(f"{val} coins added to {target}.\nThey now have {num} coins.")
+    msg = f"{val} coins added to {target}.\nThey now have {num} coins."
+    if reason != ():
+        reason = list(reason)
+        for i in range(len(reason)):
+            reason[i] = "".join(reason[i])
+        reason = " ".join(reason)
+        msg += f"\nReason: {reason}"
+    print(reason, len(reason))
+    await ctx.send(msg)
 
 @commands.Command
-async def setCrypto(ctx, target="", val=None):
+async def setCrypto(ctx, target="", val=None, *reason: tuple):
     if target == "" or val is None:
         await ctx.send(f"Usage: {constants.prefix}setCrypto [target] [val]")
     try:
@@ -89,7 +97,15 @@ async def setCrypto(ctx, target="", val=None):
 
     fileHelper.json_write(constants.dataPath + str(id) + "-crypto.json", coins)
     num = coins[userCoin]["Bank"][target]
-    await ctx.send(f"Succesfully set {target}'s coins to {num}.")
+
+    msg = f"Succesfully set {target}'s coins to {num}."
+    if reason != ():
+        reason = list(reason)
+        for i in range(len(reason)):
+            reason[i] = "".join(reason[i])
+        reason = " ".join(reason)
+        msg += f"\nReason: {reason}"
+    await ctx.send(msg)
 
 @commands.Command
 async def createCrypto(ctx, cryptoName=""):

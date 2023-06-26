@@ -9,10 +9,10 @@ Here is a detailed explanation of each command available (in the order they appe
 showCrypto takes one argument: the name of the crypto to show. It then shows a sorted leaderboard of everyone who has this crypto, and how much of it they have.
 
 ### addCrypto
-addCrypto takes two arguments: the person to add the crypto to, and the amount to add. It will automatically add to the user's own crypto. If the user does not have a crypto, it will alert them. After adding the amount to the target, it shows how many coins the user now has. A negative amount of coins can also be passed through, but the message does not change (because I'm too lazy lol).
+addCrypto takes three arguments: the person to add the crypto to, the amount to add, and an optional reason. It will automatically add to the user's own crypto. If the user does not have a crypto, it will alert them. After adding the amount to the target, it shows how many coins the user now has. A negative amount of coins can also be passed through, but the message does not change (because I'm too lazy lol). The reason argument is optional, but if it is passed through, it will be diplayed to the user when the other message is sent.
 
 ### setCrypto
-setCrypto takes two arguments: the person to set the value of crypto, and the new value. This is similar to addCrypto, except it sets the value instead of adding it. See addCrypto for full details.
+setCrypto takes three arguments: the person to set the value of crypto, the new value, and an optional reason. This is similar to addCrypto, except it sets the value instead of adding it. See addCrypto for full details.
 
 ### createCrypto
 createCrypto takes one argument: the name of the crypto. It then creates a crypto with that name. If the user already has created a crypto, they are not allowed to make another crypto. Also keep in mind that the names cannot have spaces in them due to the way Discord's commands work.

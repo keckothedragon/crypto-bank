@@ -9,7 +9,7 @@ dataPath = "./data/"
 helpMsg = f"Commands (do not include brackets around arguments):\n\
 * {prefix}showCrypto [name]: Shows standings for a specific crypto.\n\
 * {prefix}listCrypto: Shows all cryptos stored.\n\
-* {prefix}addCrypto [target] [amount]: Adds amount of your own crypto to a user (just use their name, do not ping them in the message).\n\
+* {prefix}addCrypto [target] [amount] [reason]: Adds amount of your own crypto to a user (just use their name, do not ping them in the message). Reason is optional, and will be displayed on confirmation.\n\
 * {prefix}setCrypto [target] [amount]: Same as addCrypto, but sets the value instead of adding.\n\
 * {prefix}createCrypto [name]: Creates a crypto with the specified name. If you already own a crypto, you will not be able to make another. Crypto names cannot contain spaces.\n\
 * {prefix}deleteCrypto: Deletes your crypto, asking first for confirmation or cancellation.\n\
@@ -19,4 +19,4 @@ helpMsg = f"Commands (do not include brackets around arguments):\n\
 * {prefix}transferCrypto [userFrom] [userTo] [amount]: Transfers amount of your crypto from userFrom to userTo. Both userFrom and userTo must have accounts in your crypto.\n\
 * {prefix}cryptoHelp: Shows this message."
 
-bankExceptions = {1114372122509332651:915361057185357874, 946896976836976690:915361057185357874}
+bankExceptions = {1114372122509332651:915361057185357874}
