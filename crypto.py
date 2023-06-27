@@ -234,7 +234,7 @@ async def deleteUser(ctx, target=""):
         return
     
     poppedData = coins[userCoin]["Bank"].pop(target)
-    fileHelper.json_write(constants.dataPath + id + "-crypto.json", coins)
+    fileHelper.json_write(constants.dataPath + str(id) + "-crypto.json", coins)
     await ctx.send(f"Successfully removed {target} from your crypto.\n{target} had {poppedData} coins.")
 
 @commands.Command
