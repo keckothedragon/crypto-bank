@@ -17,6 +17,7 @@ helpMsg = f"Commands (do not include brackets around arguments):\n\
 * {prefix}cancelDeletion: Cancels deletion after deleteCrypto was called.\n\
 * {prefix}deleteUser [target]: Deletes target from your crypto.\n\
 * {prefix}transferCrypto [userFrom] [userTo] [amount]: Transfers amount of your crypto from userFrom to userTo. Both userFrom and userTo must have accounts in your crypto.\n\
+* {prefix}renameCrypto [newName]: Renames your crypto to newName. Crypto names cannot contain spaces.\n\
 * {prefix}cryptoHelp: Shows this message."
 
 bankExceptions = {1114372122509332651:915361057185357874}

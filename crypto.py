@@ -40,25 +40,25 @@ async def showCrypto(ctx, crypto=""):
         msg = f"{discordTypeConversion.idtoname(ctx, targetID)} has the following crypto:\n"
         for key, value in backpack.items():
             msg += f"{key}: {value[0]} (#{value[1]})\n"
-        await ctx.send(msg)
-    if ctx.guild.id in constants.bankExceptions:
-        id = constants.bankExceptions[ctx.guild.id]
     else:
-        id = ctx.guild.id
-    coins = fileHelper.json_read(constants.dataPath + str(id) + "-crypto.json")
-    if crypto not in coins:
-        await ctx.send(f"Invalid crypto name. To see a list of all crypto, use {constants.prefix}listCrypto.")
-        return
-    bank = coins[crypto]["Bank"]
-    bank = [[value, key] for key, value in bank.items()]
-    # reversing key value pairs to sort
-    bank.sort(reverse=True)
-    msg = ""
-    for user in bank:
-        msg += f"{discordTypeConversion.idtoname(ctx, int(user[1]))}: {user[0]}\n"
-    msg = msg.strip('\n')
-    if not msg:
-        msg = f"There is no data for {crypto}."
+        if ctx.guild.id in constants.bankExceptions:
+            id = constants.bankExceptions[ctx.guild.id]
+        else:
+            id = ctx.guild.id
+        coins = fileHelper.json_read(constants.dataPath + str(id) + "-crypto.json")
+        if crypto not in coins:
+            await ctx.send(f"Invalid crypto name. To see a list of all crypto, use {constants.prefix}listCrypto.")
+            return
+        bank = coins[crypto]["Bank"]
+        bank = [[value, key] for key, value in bank.items()]
+        # reversing key value pairs to sort
+        bank.sort(reverse=True)
+        msg = ""
+        for user in bank:
+            msg += f"{discordTypeConversion.idtoname(ctx, int(user[1]))}: {user[0]}\n"
+        msg = msg.strip('\n')
+        if not msg:
+            msg = f"There is no data for {crypto}."
     await ctx.send(msg)
 
 @commands.Command
@@ -329,6 +329,27 @@ async def transferCrypto(ctx, userFrom="", userTo="", amount=None):
                    f"{userToName} now has {coins[userCoin]['Bank'][str(userToID)]} coins.")
     
 @commands.Command
+async def renameCrypto(ctx, newName=""):
+    if newName == "":
+        await ctx.send(f"Usage: {constants.prefix}renameCrypto [newName]")
+        return
+    if ctx.guild.id in constants.bankExceptions:
+        id = constants.bankExceptions[ctx.guild.id]
+    else:
+        id = ctx.guild.id
+    coins = fileHelper.json_read(constants.dataPath + str(id) + "-crypto.json")
+    userCoin = ""
+    for key, value in coins.items():
+        if ctx.author.id == value["Owner"]:
+            userCoin = key
+    if userCoin == "":
+        await ctx.send(f"You do not own a crypto. You can create one with {constants.prefix}createCrypto.")
+        return
+    coins[newName] = coins.pop(userCoin)
+    fileHelper.json_write(constants.dataPath + str(id) + "-crypto.json", coins)
+    await ctx.send(f"Successfully renamed {userCoin} to {newName}.")
+
+@commands.Command
 async def cryptoHelp(ctx):
     await ctx.send(constants.helpMsg)
 
@@ -342,6 +363,7 @@ client.add_command(cancelDeletion)
 client.add_command(listCrypto)
 client.add_command(deleteUser)
 client.add_command(transferCrypto)
+client.add_command(renameCrypto)
 client.add_command(cryptoHelp)
 
 client.run(os.getenv("TOKEN"))

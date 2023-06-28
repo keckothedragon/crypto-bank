@@ -38,5 +38,8 @@ deleteUser takes one argument, the person to delete the crypto from. It will rem
 ### transferCrypto
 transferCrypto takes three arguments, the person to take crypto from, the person to deposit the crypto to, and the amount to transfer. It will automatically do this for the user's crypto. If the person to take the crypto from does not have a sufficient amount of crypto, the user will be alerted. If the person to deposit the crypto to does not have any of the user's crypto, they will still be given the amount. If the operation was successful, a message is shown detailing the transfer and the amount, and the new balances of both people involved.
 
+### renameCrypto
+renameCrypto takes one argument, the new name of the crypto. It will automatically rename the user's crypto to the new name. Crypto names cannot contain spaces.
+
 ### cryptoHelp
 cryptoHelp does not take any arguments. cryptoHelp shows an abridged version of these explanations.
