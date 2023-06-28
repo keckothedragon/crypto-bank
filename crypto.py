@@ -73,6 +73,7 @@ async def addCrypto(ctx, target="", val=None, *reason: tuple):
         val = int(val)
     except ValueError:
         await ctx.send(f"Usage: {constants.prefix}addCrypto: [target] [value]")
+        return
     if ctx.guild.id in constants.bankExceptions:
         id = constants.bankExceptions[ctx.guild.id]
     else:
@@ -105,6 +106,7 @@ async def addCrypto(ctx, target="", val=None, *reason: tuple):
 async def setCrypto(ctx, target="", val=None, *reason: tuple):
     if target == "" or val is None:
         await ctx.send(f"Usage: {constants.prefix}setCrypto [target] [val]")
+        return
     targetID = discordTypeConversion.pingtoid(target)
     if targetID is None:
         await ctx.send(f"Usage: {constants.prefix}setCrypto: [target] [value] (target must be a ping)")
@@ -113,6 +115,7 @@ async def setCrypto(ctx, target="", val=None, *reason: tuple):
         val = int(val)
     except ValueError:
         await ctx.send(f"Usage: {constants.prefix}setCrypto [target] [val]")
+        return
     if ctx.guild.id in constants.bankExceptions:
         id = constants.bankExceptions[ctx.guild.id]
     else:
@@ -327,19 +330,6 @@ async def transferCrypto(ctx, userFrom="", userTo="", amount=None):
 async def cryptoHelp(ctx):
     await ctx.send(constants.helpMsg)
 
-@commands.Command
-async def getName(ctx, target=""):
-    if "<@" not in target or ">" not in target:
-        await ctx.send(f"Usage: {constants.prefix}getName [target] (target must be a ping)")
-        return
-    try:
-        id = target.replace("<@", "").replace(">", "")
-        id = int(id)
-    except ValueError:
-        await ctx.send(f"Usage: {constants.prefix}getName [target] (target must be a ping)")
-        return
-    await ctx.send(discordTypeConversion.idtoname(ctx, id))
-
 client.add_command(showCrypto)
 client.add_command(addCrypto)
 client.add_command(setCrypto)
@@ -351,6 +341,5 @@ client.add_command(listCrypto)
 client.add_command(deleteUser)
 client.add_command(transferCrypto)
 client.add_command(cryptoHelp)
-client.add_command(getName)
 
 client.run(os.getenv("TOKEN"))
