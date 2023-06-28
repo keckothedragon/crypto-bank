@@ -31,13 +31,15 @@ async def showCrypto(ctx, crypto=""):
         backpack = {}
         for coin in coins:
             if str(targetID) in coins[coin]["Bank"]:
-                backpack[coin] = coins[coin]["Bank"][str(targetID)]
+                val = coins[coin]["Bank"][str(targetID)]
+                placement = sorted(list(coins[coin]["Bank"]))[::-1].index(str(targetID)) + 1
+                backpack[coin] = [val, placement]
         if len(backpack) == 0:
             await ctx.send(f"{discordTypeConversion.idtoname(ctx, targetID)} does not have any crypto.")
             return
         msg = f"{discordTypeConversion.idtoname(ctx, targetID)} has the following crypto:\n"
         for key, value in backpack.items():
-            msg += f"{key}: {value}\n"
+            msg += f"{key}: {value[0]} (#{value[1]})\n"
         await ctx.send(msg)
     if ctx.guild.id in constants.bankExceptions:
         id = constants.bankExceptions[ctx.guild.id]
