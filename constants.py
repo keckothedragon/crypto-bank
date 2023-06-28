@@ -7,9 +7,9 @@ prefix = "$"
 dataPath = "./data/"
 
 helpMsg = f"Commands (do not include brackets around arguments):\n\
-* {prefix}showCrypto [name]: Shows standings for a specific crypto.\n\
+* {prefix}showCrypto [name]: Shows standings for a specific crypto. ALT: Shows all crypto of a specific user (ping them).\n\
 * {prefix}listCrypto: Shows all cryptos stored.\n\
-* {prefix}addCrypto [target] [amount] [reason]: Adds amount of your own crypto to a user (just use their name, do not ping them in the message). Reason is optional, and will be displayed on confirmation.\n\
+* {prefix}addCrypto [target] [amount] [reason]: Adds amount of your own crypto to a user (you must ping them). Reason is optional, and will be displayed on confirmation.\n\
 * {prefix}setCrypto [target] [amount]: Same as addCrypto, but sets the value instead of adding.\n\
 * {prefix}createCrypto [name]: Creates a crypto with the specified name. If you already own a crypto, you will not be able to make another. Crypto names cannot contain spaces.\n\
 * {prefix}deleteCrypto: Deletes your crypto, asking first for confirmation or cancellation.\n\

@@ -15,6 +15,30 @@ async def showCrypto(ctx, crypto=""):
     if crypto == "":
         await ctx.send(f"Usage: {constants.prefix}showCrypto [name of crypto]")
         return
+    if discordTypeConversion.pingtoid(crypto) is not None:
+        if crypto == "":
+            await ctx.send(f"Usage: {constants.prefix}showCryptoUser [target]")
+            return
+        targetID = discordTypeConversion.pingtoid(crypto)
+        if targetID is None:
+            await ctx.send(f"Usage: {constants.prefix}showCryptoUser [target] (target must be a ping)")
+            return
+        if ctx.guild.id in constants.bankExceptions:
+            id = constants.bankExceptions[ctx.guild.id]
+        else:
+            id = ctx.guild.id
+        coins = fileHelper.json_read(constants.dataPath + str(id) + "-crypto.json")
+        backpack = {}
+        for coin in coins:
+            if str(targetID) in coins[coin]["Bank"]:
+                backpack[coin] = coins[coin]["Bank"][str(targetID)]
+        if len(backpack) == 0:
+            await ctx.send(f"{discordTypeConversion.idtoname(ctx, targetID)} does not have any crypto.")
+            return
+        msg = f"{discordTypeConversion.idtoname(ctx, targetID)} has the following crypto:\n"
+        for key, value in backpack.items():
+            msg += f"{key}: {value}\n"
+        await ctx.send(msg)
     if ctx.guild.id in constants.bankExceptions:
         id = constants.bankExceptions[ctx.guild.id]
     else:
@@ -120,6 +144,8 @@ async def createCrypto(ctx, cryptoName=""):
     if cryptoName == "":
         await ctx.send(f"Usage: {constants.prefix}createCrypto [name]")
         return
+    if discordTypeConversion.pingtoid(cryptoName) is not None:
+        await ctx.send(f"Crypto name cannot be a ping.")
     if ctx.guild.id in constants.bankExceptions:
         id = constants.bankExceptions[ctx.guild.id]
     else:
@@ -313,7 +339,6 @@ async def getName(ctx, target=""):
         await ctx.send(f"Usage: {constants.prefix}getName [target] (target must be a ping)")
         return
     await ctx.send(discordTypeConversion.idtoname(ctx, id))
-    
 
 client.add_command(showCrypto)
 client.add_command(addCrypto)

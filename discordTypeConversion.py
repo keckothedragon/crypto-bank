@@ -8,8 +8,5 @@ def pingtoid(ping) -> int:
     except ValueError:
         return None
 
-def idtomember(ctx, id) -> discord.member.Member:
-    return discord.utils.get(ctx.guild.members, id=id)
-
 def idtoname(ctx, id) -> str:
     return discord.utils.get(ctx.guild.members, id=id).display_name
