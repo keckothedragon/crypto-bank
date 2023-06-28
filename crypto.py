@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import os
 import constants
 import fileHelper
+import discordTypeConversion
 
 load_dotenv(".env")
 
@@ -28,7 +29,7 @@ async def showCrypto(ctx, crypto=""):
     bank.sort(reverse=True)
     msg = ""
     for user in bank:
-        msg += f"{user[1]}: {user[0]}\n"
+        msg += f"{discordTypeConversion.idtoname(ctx, int(user[1]))}: {user[0]}\n"
     msg = msg.strip('\n')
     if not msg:
         msg = f"There is no data for {crypto}."
@@ -38,6 +39,10 @@ async def showCrypto(ctx, crypto=""):
 async def addCrypto(ctx, target="", val=None, *reason: tuple):
     if target == "" or val is None:
         await ctx.send(f"Usage: {constants.prefix}addCrypto: [target] [value]")
+        return
+    targetID = discordTypeConversion.pingtoid(target)
+    if targetID is None:
+        await ctx.send(f"Usage: {constants.prefix}addCrypto: [target] [value] (target must be a ping)")
         return
     try:
         # making sure user didnt pass args in wrong order
@@ -56,27 +61,30 @@ async def addCrypto(ctx, target="", val=None, *reason: tuple):
     if userCoin == "":
         await ctx.send(f"You do not own a crypto. You can create one with {constants.prefix}createCrypto.")
         return
-    if target in coins[userCoin]["Bank"]:
-        coins[userCoin]["Bank"][target] += val
+    if str(targetID) in coins[userCoin]["Bank"]:
+        coins[userCoin]["Bank"][str(targetID)] += val
     else:
-        coins[userCoin]["Bank"][target] = val
+        coins[userCoin]["Bank"][str(targetID)] = val
 
     fileHelper.json_write(constants.dataPath + str(id) + "-crypto.json", coins)
-    num = coins[userCoin]["Bank"][target]
-    msg = f"{val} coins added to {target}.\nThey now have {num} coins."
+    num = coins[userCoin]["Bank"][str(targetID)]
+    msg = f"{val} coins added to {discordTypeConversion.idtoname(ctx, targetID)}.\nThey now have {num} coins."
     if reason != ():
         reason = list(reason)
         for i in range(len(reason)):
             reason[i] = "".join(reason[i])
         reason = " ".join(reason)
         msg += f"\nReason: {reason}"
-    print(reason, len(reason))
     await ctx.send(msg)
 
 @commands.Command
 async def setCrypto(ctx, target="", val=None, *reason: tuple):
     if target == "" or val is None:
         await ctx.send(f"Usage: {constants.prefix}setCrypto [target] [val]")
+    targetID = discordTypeConversion.pingtoid(target)
+    if targetID is None:
+        await ctx.send(f"Usage: {constants.prefix}setCrypto: [target] [value] (target must be a ping)")
+        return
     try:
         val = int(val)
     except ValueError:
@@ -93,12 +101,12 @@ async def setCrypto(ctx, target="", val=None, *reason: tuple):
     if userCoin == "":
         await ctx.send(f"You do not own a crypto. You can create one with {constants.prefix}createCrypto.")
         return
-    coins[userCoin]["Bank"][target] = val
+    coins[userCoin]["Bank"][str(targetID)] = val
 
     fileHelper.json_write(constants.dataPath + str(id) + "-crypto.json", coins)
-    num = coins[userCoin]["Bank"][target]
+    num = coins[userCoin]["Bank"][str(targetID)]
 
-    msg = f"Succesfully set {target}'s coins to {num}."
+    msg = f"Succesfully set {discordTypeConversion.idtoname(ctx, targetID)}'s coins to {num}."
     if reason != ():
         reason = list(reason)
         for i in range(len(reason)):
@@ -216,6 +224,10 @@ async def deleteUser(ctx, target=""):
     if target == "":
         await ctx.send(f"Usage: {constants.prefix}deleteUser [target]")
         return
+    targetID = discordTypeConversion.pingtoid(target)
+    if targetID is None:
+        await ctx.send(f"Usage: {constants.prefix}deleteUser [target] (target must be a ping)")
+        return
     if ctx.guild.id in constants.bankExceptions:
         id = constants.bankExceptions[ctx.guild.id]
     else:
@@ -229,20 +241,24 @@ async def deleteUser(ctx, target=""):
     if userCoin == "":
         await ctx.send(f"You do not currently own a crypto. You can create one with {constants.prefix}createCrypto.")
 
-    if target not in coins[userCoin]["Bank"]:
-        await ctx.send(f"{target} does not have any of your crypto.")
+    if str(targetID) not in coins[userCoin]["Bank"]:
+        await ctx.send(f"{discordTypeConversion.idtoname(ctx, targetID)} does not have any of your crypto.")
         return
     
-    poppedData = coins[userCoin]["Bank"].pop(target)
+    poppedData = coins[userCoin]["Bank"].pop(str(targetID))
     fileHelper.json_write(constants.dataPath + str(id) + "-crypto.json", coins)
-    await ctx.send(f"Successfully removed {target} from your crypto.\n{target} had {poppedData} coins.")
+    await ctx.send(f"Successfully removed {discordTypeConversion.idtoname(ctx, targetID)} from your crypto.\n{target} had {poppedData} coins.")
 
 @commands.Command
 async def transferCrypto(ctx, userFrom="", userTo="", amount=None):
     if userFrom == "" or userTo == "" or amount is None:
         await ctx.send(f"Usage: {constants.prefix}transferCrypto [userFrom] [userTo] [amount]")
         return
-
+    userFromID = discordTypeConversion.pingtoid(userFrom)
+    userToID = discordTypeConversion.pingtoid(userTo)
+    if userFromID is None or userToID is None:
+        await ctx.send(f"Usage: {constants.prefix}transferCrypto [userFrom] [userTo] [amount] (userFrom and userTo must be pings)")
+        return
     try:
         amount = int(amount)
     except ValueError:
@@ -261,27 +277,43 @@ async def transferCrypto(ctx, userFrom="", userTo="", amount=None):
     if userCoin == "":
         await ctx.send(f"You do not own a crypto. You can create one with {constants.prefix}createCrypto.")
         return
-    if userFrom not in coins[userCoin]["Bank"]:
-        await ctx.send(f"{userFrom} does not have any of your crypto.")
+    if str(userFromID) not in coins[userCoin]["Bank"]:
+        await ctx.send(f"{discordTypeConversion.idtoname(ctx, userFromID)} does not have any of your crypto.")
         return
-    if userTo not in coins[userCoin]["Bank"]:
-        await ctx.send(f"{userTo} does not have any of your crypto. To confirm transfer, use the command \"{constants.prefix}setCrypto {userTo} 0\" first.")
+    if str(userToID) not in coins[userCoin]["Bank"]:
+        coins[userCoin]["Bank"][str(userToID)] = 0
+    if coins[userCoin]["Bank"][str(userFromID)] < amount:
+        userFromAmt = coins[userCoin]["Bank"][str(userFromID)]
+        await ctx.send(f"{discordTypeConversion.idtoname(ctx, userFromID)} only has {userFromAmt} coins. Please try again with a lower amount.")
         return
-    if coins[userCoin]["Bank"][userFrom] < amount:
-        userFromAmt = coins[userCoin]["Bank"][userFrom]
-        await ctx.send(f"{userFrom} only has {userFromAmt} coins. Please try again with a lower amount.")
-        return
-    coins[userCoin]["Bank"][userFrom] -= amount
-    coins[userCoin]["Bank"][userTo] += amount
+    coins[userCoin]["Bank"][str(userFromID)] -= amount
+    coins[userCoin]["Bank"][str(userToID)] += amount
 
     fileHelper.json_write(constants.dataPath + str(id) + "-crypto.json", coins)
-    await ctx.send(f"Successfully transferred {amount} coins from {userFrom} to {userTo}.\n" +
-                   f"{userFrom} now has {coins[userCoin]['Bank'][userFrom]} coins.\n" +
-                   f"{userTo} now has {coins[userCoin]['Bank'][userTo]} coins.")
+    userFromName = discordTypeConversion.idtoname(ctx, userFromID)
+    userToName = discordTypeConversion.idtoname(ctx, userToID)
+    # got tired of writing it out for this send
+    await ctx.send(f"Successfully transferred {amount} coins from {userFromName} to {userTo}.\n" +
+                   f"{userFromName} now has {coins[userCoin]['Bank'][str(userFromID)]} coins.\n" +
+                   f"{userToName} now has {coins[userCoin]['Bank'][str(userToID)]} coins.")
     
 @commands.Command
 async def cryptoHelp(ctx):
     await ctx.send(constants.helpMsg)
+
+@commands.Command
+async def getName(ctx, target=""):
+    if "<@" not in target or ">" not in target:
+        await ctx.send(f"Usage: {constants.prefix}getName [target] (target must be a ping)")
+        return
+    try:
+        id = target.replace("<@", "").replace(">", "")
+        id = int(id)
+    except ValueError:
+        await ctx.send(f"Usage: {constants.prefix}getName [target] (target must be a ping)")
+        return
+    await ctx.send(discordTypeConversion.idtoname(ctx, id))
+    
 
 client.add_command(showCrypto)
 client.add_command(addCrypto)
@@ -294,5 +326,6 @@ client.add_command(listCrypto)
 client.add_command(deleteUser)
 client.add_command(transferCrypto)
 client.add_command(cryptoHelp)
+client.add_command(getName)
 
 client.run(os.getenv("TOKEN"))
