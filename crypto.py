@@ -20,9 +20,7 @@ async def showCrypto(ctx, crypto=""):
             await ctx.send(f"Usage: {constants.prefix}showCryptoUser [target]")
             return
         targetID = discordTypeConversion.pingtoid(crypto)
-        if targetID is None:
-            await ctx.send(f"Usage: {constants.prefix}showCryptoUser [target] (target must be a ping)")
-            return
+        targetName = discordTypeConversion.idtoname(ctx, targetID)
         if ctx.guild.id in constants.bankExceptions:
             id = constants.bankExceptions[ctx.guild.id]
         else:
@@ -35,9 +33,9 @@ async def showCrypto(ctx, crypto=""):
                 placement = sorted(list(coins[coin]["Bank"]))[::-1].index(str(targetID)) + 1
                 backpack[coin] = [val, placement]
         if len(backpack) == 0:
-            await ctx.send(f"{discordTypeConversion.idtoname(ctx, targetID)} does not have any crypto.")
+            await ctx.send(f"{targetName} does not have any crypto.")
             return
-        msg = f"{discordTypeConversion.idtoname(ctx, targetID)} has the following crypto:\n"
+        msg = f"{targetName} has the following crypto:\n"
         for key, value in backpack.items():
             msg += f"{key}: {value[0]} (#{value[1]})\n"
     else:
@@ -66,21 +64,27 @@ async def addCrypto(ctx, target="", val=None, *reason: tuple):
     if target == "" or val is None:
         await ctx.send(f"Usage: {constants.prefix}addCrypto: [target] [value] [reason: optional]")
         return
+    
     targetID = discordTypeConversion.pingtoid(target)
     if targetID is None:
         await ctx.send(f"Usage: {constants.prefix}addCrypto: [target] [value] [reason: optional] (target must be a ping)")
         return
+    else:
+        targetName = discordTypeConversion.idtoname(ctx, targetID)
+    
     try:
         # making sure user didnt pass args in wrong order
         val = int(val)
     except ValueError:
         await ctx.send(f"Usage: {constants.prefix}addCrypto: [target] [value] [reason: optional]")
         return
+    
     if ctx.guild.id in constants.bankExceptions:
         id = constants.bankExceptions[ctx.guild.id]
     else:
         id = ctx.guild.id
     coins = fileHelper.json_read(constants.dataPath + str(id) + "-crypto.json")
+
     userCoin = ""
     for key, value in coins.items():
         if ctx.author.id == value["Owner"]:
@@ -88,14 +92,16 @@ async def addCrypto(ctx, target="", val=None, *reason: tuple):
     if userCoin == "":
         await ctx.send(f"You do not own a crypto. You can create one with {constants.prefix}createCrypto.")
         return
+    
     if str(targetID) in coins[userCoin]["Bank"]:
         coins[userCoin]["Bank"][str(targetID)] += val
     else:
         coins[userCoin]["Bank"][str(targetID)] = val
 
     fileHelper.json_write(constants.dataPath + str(id) + "-crypto.json", coins)
+
     num = coins[userCoin]["Bank"][str(targetID)]
-    msg = f"{val} coins added to {discordTypeConversion.idtoname(ctx, targetID)}.\nThey now have {num} coins."
+    msg = f"{val} coins added to {targetName}.\nThey now have {num} coins."
     if reason != ():
         reason = list(reason)
         for i in range(len(reason)):
@@ -109,20 +115,26 @@ async def setCrypto(ctx, target="", val=None, *reason: tuple):
     if target == "" or val is None:
         await ctx.send(f"Usage: {constants.prefix}setCrypto [target] [val] [reason: optional]")
         return
+    
     targetID = discordTypeConversion.pingtoid(target)
     if targetID is None:
         await ctx.send(f"Usage: {constants.prefix}setCrypto: [target] [value] [reason: optional] (target must be a ping)")
         return
+    else:
+        targetName = discordTypeConversion.idtoname(ctx, targetID)
+
     try:
         val = int(val)
     except ValueError:
         await ctx.send(f"Usage: {constants.prefix}setCrypto [target] [val] [reason: optional]")
         return
+    
     if ctx.guild.id in constants.bankExceptions:
         id = constants.bankExceptions[ctx.guild.id]
     else:
         id = ctx.guild.id
     coins = fileHelper.json_read(constants.dataPath + str(id) + "-crypto.json")
+
     userCoin = ""
     for key, value in coins.items():
         if ctx.author.id == value["Owner"]:
@@ -130,12 +142,13 @@ async def setCrypto(ctx, target="", val=None, *reason: tuple):
     if userCoin == "":
         await ctx.send(f"You do not own a crypto. You can create one with {constants.prefix}createCrypto.")
         return
+    
     coins[userCoin]["Bank"][str(targetID)] = val
 
     fileHelper.json_write(constants.dataPath + str(id) + "-crypto.json", coins)
-    num = coins[userCoin]["Bank"][str(targetID)]
 
-    msg = f"Succesfully set {discordTypeConversion.idtoname(ctx, targetID)}'s coins to {num}."
+    num = coins[userCoin]["Bank"][str(targetID)]
+    msg = f"Succesfully set {targetName}'s coins to {num}."
     if reason != ():
         reason = list(reason)
         for i in range(len(reason)):
@@ -149,13 +162,16 @@ async def createCrypto(ctx, cryptoName=""):
     if cryptoName == "":
         await ctx.send(f"Usage: {constants.prefix}createCrypto [name]")
         return
+    
     if discordTypeConversion.pingtoid(cryptoName) is not None:
         await ctx.send(f"Crypto name cannot be a ping.")
+
     if ctx.guild.id in constants.bankExceptions:
         id = constants.bankExceptions[ctx.guild.id]
     else:
         id = ctx.guild.id
     coins = fileHelper.json_read(constants.dataPath + str(id) + "-crypto.json")
+    
     for key, value in coins.items():
         if ctx.author.id == value["Owner"]:
             await ctx.send(f"You already own a crypto: {key}")
@@ -177,6 +193,7 @@ async def deleteCrypto(ctx):
     else:
         id = ctx.guild.id
     coins = fileHelper.json_read(constants.dataPath + str(id) + "-crypto.json")
+    
     userOwn = False
     for coin in coins:
         if coins[coin]["Owner"] == ctx.author.id:
@@ -189,12 +206,15 @@ async def deleteCrypto(ctx):
         id = constants.bankExceptions[ctx.guild.id]
     else:
         id = ctx.guild.id
+    
     confirmation: set = fileHelper.pickle_read(constants.dataPath + str(id) + "-confirmation.pickle")
     if ctx.author.id in confirmation:
         await ctx.send(f"You still have an unconfirmed command. Please run {constants.prefix}confirmDeletion to confirm or {constants.prefix}cancelDeletion to cancel.")
         return
     confirmation.add(ctx.author.id)
+
     fileHelper.pickle_write(constants.dataPath + str(id) + "-confirmation.pickle", confirmation)
+    
     await ctx.send(f"This is a dangerous command. Please run {constants.prefix}confirmDeletion to confirm deletion.")
 
 @commands.Command
@@ -203,15 +223,18 @@ async def confirmDeletion(ctx):
         id = constants.bankExceptions[ctx.guild.id]
     else:
         id = ctx.guild.id
+
     confirmation: set = fileHelper.pickle_read(constants.dataPath + str(id) + "-confirmation.pickle")
     if ctx.author.id not in confirmation:
         await ctx.send(f"There is nothing awaiting confirmation.")
         return
+    
     if ctx.guild.id in constants.bankExceptions:
         id = constants.bankExceptions[ctx.guild.id]
     else:
         id = ctx.guild.id
     coins = fileHelper.json_read(constants.dataPath + str(id) + "-crypto.json")
+    
     for key, value in coins.items():
         if value["Owner"] == ctx.author.id:
             del coins[key]
@@ -220,6 +243,7 @@ async def confirmDeletion(ctx):
     fileHelper.json_write(constants.dataPath + str(id) + "-crypto.json", coins)
 
     confirmation.remove(ctx.author.id)
+    
     fileHelper.pickle_write(constants.dataPath + str(id) + "-confirmation.pickle", confirmation)
 
     await ctx.send(f"Successfully deleted \"{key}\".")
@@ -230,12 +254,16 @@ async def cancelDeletion(ctx):
         id = constants.bankExceptions[ctx.guild.id]
     else:
         id = ctx.guild.id
+    
     confirmation = fileHelper.pickle_read(constants.dataPath + str(id) + "-confirmation.pickle")
     if ctx.author.id not in confirmation:
         await ctx.send("There is nothing awaiting confirmation.")
         return
+    
     confirmation.remove(ctx.author.id)
+    
     fileHelper.pickle_write(constants.dataPath + str(id) + "-confirmation.pickle", confirmation)
+    
     await ctx.send(f"Cancelled deletion.")
 
 @commands.Command
@@ -244,10 +272,14 @@ async def listCrypto(ctx):
         id = constants.bankExceptions[ctx.guild.id]
     else:
         id = ctx.guild.id
+    
     coins = fileHelper.json_read(constants.dataPath + str(id) + "-crypto.json")
+    
     msg = "\n".join([str(coin) for coin in coins])
+    
     if not msg:
         msg = "No crypto to list."
+    
     await ctx.send(msg)
 
 @commands.Command
@@ -255,15 +287,21 @@ async def deleteUser(ctx, target=""):
     if target == "":
         await ctx.send(f"Usage: {constants.prefix}deleteUser [target]")
         return
+    
     targetID = discordTypeConversion.pingtoid(target)
     if targetID is None:
         await ctx.send(f"Usage: {constants.prefix}deleteUser [target] (target must be a ping)")
         return
+    else:
+        targetName = discordTypeConversion.idtoname(ctx, targetID)
+    
     if ctx.guild.id in constants.bankExceptions:
         id = constants.bankExceptions[ctx.guild.id]
     else:
         id = ctx.guild.id
+    
     coins = fileHelper.json_read(constants.dataPath + str(id) + "-crypto.json")
+    
     userCoin = ""
     for key, value in coins.items():
         if ctx.author.id == value["Owner"]: 
@@ -273,12 +311,14 @@ async def deleteUser(ctx, target=""):
         await ctx.send(f"You do not currently own a crypto. You can create one with {constants.prefix}createCrypto.")
 
     if str(targetID) not in coins[userCoin]["Bank"]:
-        await ctx.send(f"{discordTypeConversion.idtoname(ctx, targetID)} does not have any of your crypto.")
+        await ctx.send(f"{targetName} does not have any of your crypto.")
         return
     
     poppedData = coins[userCoin]["Bank"].pop(str(targetID))
+    
     fileHelper.json_write(constants.dataPath + str(id) + "-crypto.json", coins)
-    await ctx.send(f"Successfully removed {discordTypeConversion.idtoname(ctx, targetID)} from your crypto.\n{target} had {poppedData} coins.")
+    
+    await ctx.send(f"Successfully removed {targetName} from your crypto.\n{targetName} had {poppedData} coins.")
 
 @commands.Command
 async def transferCrypto(ctx, userFrom="", userTo="", amount=None, *reason: tuple):
@@ -290,6 +330,10 @@ async def transferCrypto(ctx, userFrom="", userTo="", amount=None, *reason: tupl
     if userFromID is None or userToID is None:
         await ctx.send(f"Usage: {constants.prefix}transferCrypto [userFrom] [userTo] [amount] [reason: optional] (userFrom and userTo must be pings)")
         return
+    else:
+        userFromName = discordTypeConversion.idtoname(ctx, userFromID)
+        userToName = discordTypeConversion.idtoname(ctx, userToID)
+
     try:
         amount = int(amount)
     except ValueError:
@@ -301,6 +345,7 @@ async def transferCrypto(ctx, userFrom="", userTo="", amount=None, *reason: tupl
     else:
         id = ctx.guild.id
     coins = fileHelper.json_read(constants.dataPath + str(id) + "-crypto.json")
+    
     userCoin = ""
     for key, value in coins.items():
         if ctx.author.id == value["Owner"]:
@@ -308,23 +353,23 @@ async def transferCrypto(ctx, userFrom="", userTo="", amount=None, *reason: tupl
     if userCoin == "":
         await ctx.send(f"You do not own a crypto. You can create one with {constants.prefix}createCrypto.")
         return
+    
     if str(userFromID) not in coins[userCoin]["Bank"]:
-        await ctx.send(f"{discordTypeConversion.idtoname(ctx, userFromID)} does not have any of your crypto.")
+        await ctx.send(f"{userFromName} does not have any of your crypto.")
         return
     if str(userToID) not in coins[userCoin]["Bank"]:
         coins[userCoin]["Bank"][str(userToID)] = 0
+    
     if coins[userCoin]["Bank"][str(userFromID)] < amount:
         userFromAmt = coins[userCoin]["Bank"][str(userFromID)]
-        await ctx.send(f"{discordTypeConversion.idtoname(ctx, userFromID)} only has {userFromAmt} coins. Please try again with a lower amount.")
+        await ctx.send(f"{userFromName} only has {userFromAmt} coins. Please try again with a lower amount.")
         return
+    
     coins[userCoin]["Bank"][str(userFromID)] -= amount
     coins[userCoin]["Bank"][str(userToID)] += amount
 
     fileHelper.json_write(constants.dataPath + str(id) + "-crypto.json", coins)
 
-    # got tired of writing it out for this send
-    userFromName = discordTypeConversion.idtoname(ctx, userFromID)
-    userToName = discordTypeConversion.idtoname(ctx, userToID)
     msg = f"Successfully transferred {amount} coins from {userFromName} to {userTo}.\n\
 {userFromName} now has {coins[userCoin]['Bank'][str(userFromID)]} coins.\n\
 {userToName} now has {coins[userCoin]['Bank'][str(userToID)]} coins."
