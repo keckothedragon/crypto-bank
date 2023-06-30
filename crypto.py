@@ -64,17 +64,17 @@ async def showCrypto(ctx, crypto=""):
 @commands.Command
 async def addCrypto(ctx, target="", val=None, *reason: tuple):
     if target == "" or val is None:
-        await ctx.send(f"Usage: {constants.prefix}addCrypto: [target] [value]")
+        await ctx.send(f"Usage: {constants.prefix}addCrypto: [target] [value] [reason: optional]")
         return
     targetID = discordTypeConversion.pingtoid(target)
     if targetID is None:
-        await ctx.send(f"Usage: {constants.prefix}addCrypto: [target] [value] (target must be a ping)")
+        await ctx.send(f"Usage: {constants.prefix}addCrypto: [target] [value] [reason: optional] (target must be a ping)")
         return
     try:
         # making sure user didnt pass args in wrong order
         val = int(val)
     except ValueError:
-        await ctx.send(f"Usage: {constants.prefix}addCrypto: [target] [value]")
+        await ctx.send(f"Usage: {constants.prefix}addCrypto: [target] [value] [reason: optional]")
         return
     if ctx.guild.id in constants.bankExceptions:
         id = constants.bankExceptions[ctx.guild.id]
@@ -107,16 +107,16 @@ async def addCrypto(ctx, target="", val=None, *reason: tuple):
 @commands.Command
 async def setCrypto(ctx, target="", val=None, *reason: tuple):
     if target == "" or val is None:
-        await ctx.send(f"Usage: {constants.prefix}setCrypto [target] [val]")
+        await ctx.send(f"Usage: {constants.prefix}setCrypto [target] [val] [reason: optional]")
         return
     targetID = discordTypeConversion.pingtoid(target)
     if targetID is None:
-        await ctx.send(f"Usage: {constants.prefix}setCrypto: [target] [value] (target must be a ping)")
+        await ctx.send(f"Usage: {constants.prefix}setCrypto: [target] [value] [reason: optional] (target must be a ping)")
         return
     try:
         val = int(val)
     except ValueError:
-        await ctx.send(f"Usage: {constants.prefix}setCrypto [target] [val]")
+        await ctx.send(f"Usage: {constants.prefix}setCrypto [target] [val] [reason: optional]")
         return
     if ctx.guild.id in constants.bankExceptions:
         id = constants.bankExceptions[ctx.guild.id]
@@ -281,19 +281,19 @@ async def deleteUser(ctx, target=""):
     await ctx.send(f"Successfully removed {discordTypeConversion.idtoname(ctx, targetID)} from your crypto.\n{target} had {poppedData} coins.")
 
 @commands.Command
-async def transferCrypto(ctx, userFrom="", userTo="", amount=None):
+async def transferCrypto(ctx, userFrom="", userTo="", amount=None, *reason: tuple):
     if userFrom == "" or userTo == "" or amount is None:
-        await ctx.send(f"Usage: {constants.prefix}transferCrypto [userFrom] [userTo] [amount]")
+        await ctx.send(f"Usage: {constants.prefix}transferCrypto [userFrom] [userTo] [amount] [reason: optional]")
         return
     userFromID = discordTypeConversion.pingtoid(userFrom)
     userToID = discordTypeConversion.pingtoid(userTo)
     if userFromID is None or userToID is None:
-        await ctx.send(f"Usage: {constants.prefix}transferCrypto [userFrom] [userTo] [amount] (userFrom and userTo must be pings)")
+        await ctx.send(f"Usage: {constants.prefix}transferCrypto [userFrom] [userTo] [amount] [reason: optional] (userFrom and userTo must be pings)")
         return
     try:
         amount = int(amount)
     except ValueError:
-        await ctx.send(f"Usage: {constants.prefix}transferCrypto [userFrom] [userTo] [amount]")
+        await ctx.send(f"Usage: {constants.prefix}transferCrypto [userFrom] [userTo] [amount] [reason: optional]")
         return
 
     if ctx.guild.id in constants.bankExceptions:
@@ -321,12 +321,20 @@ async def transferCrypto(ctx, userFrom="", userTo="", amount=None):
     coins[userCoin]["Bank"][str(userToID)] += amount
 
     fileHelper.json_write(constants.dataPath + str(id) + "-crypto.json", coins)
+
+    # got tired of writing it out for this send
     userFromName = discordTypeConversion.idtoname(ctx, userFromID)
     userToName = discordTypeConversion.idtoname(ctx, userToID)
-    # got tired of writing it out for this send
-    await ctx.send(f"Successfully transferred {amount} coins from {userFromName} to {userTo}.\n" +
-                   f"{userFromName} now has {coins[userCoin]['Bank'][str(userFromID)]} coins.\n" +
-                   f"{userToName} now has {coins[userCoin]['Bank'][str(userToID)]} coins.")
+    msg = f"Successfully transferred {amount} coins from {userFromName} to {userTo}.\n\
+{userFromName} now has {coins[userCoin]['Bank'][str(userFromID)]} coins.\n\
+{userToName} now has {coins[userCoin]['Bank'][str(userToID)]} coins."
+    if reason != ():
+        reason = list(reason)
+        for i in range(len(reason)):
+            reason[i] = "".join(reason[i])
+        reason = " ".join(reason)
+        msg += f"\nReason: {reason}"
+    await ctx.send(msg)
     
 @commands.Command
 async def renameCrypto(ctx, newName=""):
