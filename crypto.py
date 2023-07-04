@@ -16,9 +16,6 @@ async def showCrypto(ctx, crypto=""):
         await ctx.send(f"Usage: {constants.prefix}showCrypto [name of crypto]")
         return
     if discordTypeConversion.pingtoid(crypto) is not None:
-        if crypto == "":
-            await ctx.send(f"Usage: {constants.prefix}showCryptoUser [target]")
-            return
         targetID = discordTypeConversion.pingtoid(crypto)
         targetName = discordTypeConversion.idtoname(ctx, targetID)
         if ctx.guild.id in constants.bankExceptions:
@@ -31,7 +28,7 @@ async def showCrypto(ctx, crypto=""):
             if str(targetID) in coins[coin]["Bank"]:
                 val = coins[coin]["Bank"][str(targetID)]
                 placement = sorted(list(coins[coin]["Bank"]))[::-1].index(str(targetID)) + 1
-                backpack[coin] = [val, placement]
+                backpack[coin["DisplayName"]] = [val, placement]
         if len(backpack) == 0:
             await ctx.send(f"{targetName} does not have any crypto.")
             return
@@ -39,6 +36,7 @@ async def showCrypto(ctx, crypto=""):
         for key, value in backpack.items():
             msg += f"{key}: {value[0]} (#{value[1]})\n"
     else:
+        crypto = crypto.lower()
         if ctx.guild.id in constants.bankExceptions:
             id = constants.bankExceptions[ctx.guild.id]
         else:
@@ -76,7 +74,7 @@ async def addCrypto(ctx, target="", val=None, *reason: tuple):
         # making sure user didnt pass args in wrong order
         val = int(val)
     except ValueError:
-        await ctx.send(f"Usage: {constants.prefix}addCrypto: [target] [value] [reason: optional]")
+        await ctx.send(f"Usage: {constants.prefix}addCrypto: [target] [value] [reason: optional] (value must be an integer)")
         return
     
     if ctx.guild.id in constants.bankExceptions:
@@ -126,7 +124,7 @@ async def setCrypto(ctx, target="", val=None, *reason: tuple):
     try:
         val = int(val)
     except ValueError:
-        await ctx.send(f"Usage: {constants.prefix}setCrypto [target] [val] [reason: optional]")
+        await ctx.send(f"Usage: {constants.prefix}setCrypto [target] [val] [reason: optional] (val must be an integer)")
         return
     
     if ctx.guild.id in constants.bankExceptions:
@@ -176,11 +174,12 @@ async def createCrypto(ctx, cryptoName=""):
         if ctx.author.id == value["Owner"]:
             await ctx.send(f"You already own a crypto: {key}")
             return
-    if cryptoName in coins:
+    realName = cryptoName.lower()
+    if realName in coins:
         await ctx.send("A crypto with this name already exists.")
         return
     
-    coins[cryptoName] = {"Owner": ctx.author.id, "Bank": {}}
+    coins[realName] = {"DisplayName": cryptoName, "Owner": ctx.author.id, "Bank": {}}
 
     fileHelper.json_write(constants.dataPath + str(id) + "-crypto.json", coins)
 
@@ -275,7 +274,7 @@ async def listCrypto(ctx):
     
     coins = fileHelper.json_read(constants.dataPath + str(id) + "-crypto.json")
     
-    msg = "\n".join([str(coin) for coin in coins])
+    msg = "\n".join([str(coins[coin]["DisplayName"]) for coin in coins])
     
     if not msg:
         msg = "No crypto to list."
@@ -321,24 +320,75 @@ async def deleteUser(ctx, target=""):
     await ctx.send(f"Successfully removed {targetName} from your crypto.\n{targetName} had {poppedData} coins.")
 
 @commands.Command
-async def transferCrypto(ctx, userFrom="", userTo="", amount=None, *reason: tuple):
-    if userFrom == "" or userTo == "" or amount is None:
-        await ctx.send(f"Usage: {constants.prefix}transferCrypto [userFrom] [userTo] [amount] [reason: optional]")
-        return
-    userFromID = discordTypeConversion.pingtoid(userFrom)
-    userToID = discordTypeConversion.pingtoid(userTo)
-    if userFromID is None or userToID is None:
-        await ctx.send(f"Usage: {constants.prefix}transferCrypto [userFrom] [userTo] [amount] [reason: optional] (userFrom and userTo must be pings)")
-        return
-    else:
-        userFromName = discordTypeConversion.idtoname(ctx, userFromID)
-        userToName = discordTypeConversion.idtoname(ctx, userToID)
-
+async def transferCrypto(ctx, arg1="", arg2="", amount=None, *reason: tuple):
+    # exception handling fun
     try:
         amount = int(amount)
     except ValueError:
-        await ctx.send(f"Usage: {constants.prefix}transferCrypto [userFrom] [userTo] [amount] [reason: optional]")
+        await ctx.send(f"Usage: {constants.prefix}transferCrypto [userFrom] [userTo] [amount] [reason: optional]" +
+                       "\nOR\n" + 
+                       f"Usage: {constants.prefix}transferCrypto [cryptoName] [userTo] [amount] [reason: optional] (userFrom is you)" +
+                       "\namount must be an integer.")
         return
+    if arg1 == "" or arg2 == "" or amount is None:
+        await ctx.send(f"Usage: {constants.prefix}transferCrypto [userFrom] [userTo] [amount] [reason: optional]" +
+                       "\nOR\n" + 
+                       f"Usage: {constants.prefix}transferCrypto [cryptoName] [userTo] [amount] [reason: optional] (userFrom is you)")
+    if amount <= 0:
+        await ctx.send("Amount must be greater than 0.")
+        return
+    
+    if discordTypeConversion.pingtoid(arg1) is not None:
+        await transferCryptoOwner(ctx, discordTypeConversion.pingtoid(arg1), discordTypeConversion.pingtoid(arg2), amount, reason)
+    else:
+        await transferCryptoUser(ctx, arg1, discordTypeConversion.pingtoid(arg2), amount, reason)
+
+async def transferCryptoUser(ctx, cryptoName: str, userToID: str, amount: int, reason: tuple):
+    userFromID = ctx.author.id
+
+    if ctx.guild.id in constants.bankExceptions:
+        id = constants.bankExceptions[ctx.guild.id]
+    else:
+        id = ctx.guild.id
+
+    coins = fileHelper.json_read(constants.dataPath + str(id) + "-crypto.json")
+
+    if cryptoName.lower() not in coins:
+        await ctx.send(f"{cryptoName} does not exist.")
+        return
+    
+    cryptoName = cryptoName.lower()
+    displayName = coins[cryptoName]["DisplayName"]    
+    
+    if str(userFromID) not in coins[cryptoName]["Bank"]:
+        await ctx.send(f"You do not have any {displayName}.")
+        return
+    if coins[cryptoName]["Bank"][str(userFromID)] < amount:
+        await ctx.send(f"You do not have enough of {displayName}.")
+        return
+    
+    if str(userToID) not in coins[cryptoName]["Bank"]:
+        coins[cryptoName]["Bank"][str(userToID)] = 0
+
+    coins[cryptoName]["Bank"][str(userFromID)] -= amount
+    coins[cryptoName]["Bank"][str(userToID)] += amount
+
+    fileHelper.json_write(constants.dataPath + str(id) + "-crypto.json", coins)
+
+    msg = f"Successfully transferred {amount} {displayName} to {discordTypeConversion.idtoname(ctx, userToID)}."
+
+    if reason != ():
+        reason = list(reason)
+        for i in range(len(reason)):
+            reason[i] = "".join(reason[i])
+        reason = " ".join(reason)
+        msg += f"\nReason: {reason}"
+
+    await ctx.send(msg)
+
+async def transferCryptoOwner(ctx, userFromID: str, userToID: str, amount: int, reason: tuple):
+    userFromName = discordTypeConversion.idtoname(ctx, userFromID)
+    userToName = discordTypeConversion.idtoname(ctx, userToID)
 
     if ctx.guild.id in constants.bankExceptions:
         id = constants.bankExceptions[ctx.guild.id]
@@ -370,7 +420,7 @@ async def transferCrypto(ctx, userFrom="", userTo="", amount=None, *reason: tupl
 
     fileHelper.json_write(constants.dataPath + str(id) + "-crypto.json", coins)
 
-    msg = f"Successfully transferred {amount} coins from {userFromName} to {userTo}.\n\
+    msg = f"Successfully transferred {amount} coins from {userFromName} to {userToName}.\n\
 {userFromName} now has {coins[userCoin]['Bank'][str(userFromID)]} coins.\n\
 {userToName} now has {coins[userCoin]['Bank'][str(userToID)]} coins."
     if reason != ():
@@ -398,7 +448,9 @@ async def renameCrypto(ctx, newName=""):
     if userCoin == "":
         await ctx.send(f"You do not own a crypto. You can create one with {constants.prefix}createCrypto.")
         return
-    coins[newName] = coins.pop(userCoin)
+    oldData = coins.pop(userCoin)
+    oldData["DisplayName"] = newName
+    coins[newName.lower()] = oldData
     fileHelper.json_write(constants.dataPath + str(id) + "-crypto.json", coins)
     await ctx.send(f"Successfully renamed {userCoin} to {newName}.")
 
