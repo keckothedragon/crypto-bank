@@ -33,9 +33,13 @@ async def showCrypto(ctx, crypto=""):
         for coin in coins:
             if str(targetID) in coins[coin]["Bank"]:
                 val = coins[coin]["Bank"][str(targetID)]
-                inverted = {value: key for key, value in coins[coin]["Bank"].items()}
-                # this next line is cancer, just a warning
-                placement = sorted(list(inverted.keys()))[::-1].index(val) + 1
+
+                placed = []
+                for key, value in coins[coin]["Bank"].items():
+                    placed.append(value)
+                placed.sort(reverse=True)
+                placement = placed.index(val) + 1
+
                 backpack[coins[coin]["DisplayName"]] = [val, placement]
         
         if len(backpack) == 0:
@@ -44,7 +48,7 @@ async def showCrypto(ctx, crypto=""):
         
         msg = f"{targetName} has the following crypto:\n"
         for key, value in backpack.items():
-            msg += f"{key}: {value[0]} (#{value[1]})\n"
+            msg += f"{key}: {value[0]} (Rank #{value[1]})\n"
     else:
         crypto = crypto.lower()
         
@@ -117,9 +121,13 @@ async def addCrypto(ctx, target="", val=None, *reason: tuple):
     fileHelper.json_write(constants.DATAPATH + str(id) + "-crypto.json", coins)
 
     num = coins[userCoin]["Bank"][str(targetID)]
-    inverted = {value: key for key, value in coins[userCoin]["Bank"].items()}
-    # see comment in showCrypto
-    placement = sorted(list(inverted.keys()))[::-1].index(num) + 1
+    
+    placed = []
+    for key, value in coins[userCoin]["Bank"].items():
+        placed.append(value)
+    placed.sort(reverse=True)
+    placement = placed.index(num) + 1
+
     msg = f"{val} coins added to {targetName}.\nThey now have {num} coins. (Rank #{placement} in {userCoin})"
 
     if reason != ():
@@ -168,7 +176,14 @@ async def setCrypto(ctx, target="", val=None, *reason: tuple):
     fileHelper.json_write(constants.DATAPATH + str(id) + "-crypto.json", coins)
 
     num = coins[userCoin]["Bank"][str(targetID)]
-    msg = f"Succesfully set {targetName}'s coins to {num}."
+
+    placed = []
+    for key, value in coins[userCoin]["Bank"].items():
+        placed.append(value)
+    placed.sort(reverse=True)
+    placement = placed.index(num) + 1
+    
+    msg = f"Succesfully set {targetName}'s coins to {num}. (Rank #{placement} in {userCoin})"
     if reason != ():
         reason = list(reason)
         for i in range(len(reason)):
