@@ -39,4 +39,4 @@ HELPINDICES = {
     "renamecrypto": 10, "rename": 10
 }
 
-bankExceptions = {1114372122509332651:915361057185357874} # you can change this to whatever you want
+BANKEXCEPTIONS = {1114372122509332651:915361057185357874} # you can change this to whatever you want

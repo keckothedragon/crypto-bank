@@ -23,8 +23,8 @@ async def showCrypto(ctx, crypto=""):
         targetID = discordTypeConversion.pingtoid(crypto)
         targetName = discordTypeConversion.idtoname(ctx, targetID)
         
-        if ctx.guild.id in constants.bankExceptions:
-            id = constants.bankExceptions[ctx.guild.id]
+        if ctx.guild.id in constants.BANKEXCEPTIONS:
+            id = constants.BANKEXCEPTIONS[ctx.guild.id]
         else:
             id = ctx.guild.id
         coins = fileHelper.json_read(constants.DATAPATH + str(id) + "-crypto.json")
@@ -34,6 +34,7 @@ async def showCrypto(ctx, crypto=""):
             if str(targetID) in coins[coin]["Bank"]:
                 val = coins[coin]["Bank"][str(targetID)]
                 inverted = {value: key for key, value in coins[coin]["Bank"].items()}
+                # this next line is cancer, just a warning
                 placement = sorted(list(inverted.keys()))[::-1].index(val) + 1
                 backpack[coins[coin]["DisplayName"]] = [val, placement]
         
@@ -47,8 +48,8 @@ async def showCrypto(ctx, crypto=""):
     else:
         crypto = crypto.lower()
         
-        if ctx.guild.id in constants.bankExceptions:
-            id = constants.bankExceptions[ctx.guild.id]
+        if ctx.guild.id in constants.BANKEXCEPTIONS:
+            id = constants.BANKEXCEPTIONS[ctx.guild.id]
         else:
             id = ctx.guild.id
         coins = fileHelper.json_read(constants.DATAPATH + str(id) + "-crypto.json")
@@ -94,8 +95,8 @@ async def addCrypto(ctx, target="", val=None, *reason: tuple):
         await ctx.send(f"Usage: {constants.PREFIX}addCrypto: [target] [value] [reason: optional] (value must be an integer)")
         return
     
-    if ctx.guild.id in constants.bankExceptions:
-        id = constants.bankExceptions[ctx.guild.id]
+    if ctx.guild.id in constants.BANKEXCEPTIONS:
+        id = constants.BANKEXCEPTIONS[ctx.guild.id]
     else:
         id = ctx.guild.id
     coins = fileHelper.json_read(constants.DATAPATH + str(id) + "-crypto.json")
@@ -116,7 +117,11 @@ async def addCrypto(ctx, target="", val=None, *reason: tuple):
     fileHelper.json_write(constants.DATAPATH + str(id) + "-crypto.json", coins)
 
     num = coins[userCoin]["Bank"][str(targetID)]
-    msg = f"{val} coins added to {targetName}.\nThey now have {num} coins."
+    inverted = {value: key for key, value in coins[userCoin]["Bank"].items()}
+    # see comment in showCrypto
+    placement = sorted(list(inverted.keys()))[::-1].index(num) + 1
+    msg = f"{val} coins added to {targetName}.\nThey now have {num} coins. (Rank #{placement} in {userCoin})"
+
     if reason != ():
         reason = list(reason)
         for i in range(len(reason)):
@@ -144,8 +149,8 @@ async def setCrypto(ctx, target="", val=None, *reason: tuple):
         await ctx.send(f"Usage: {constants.PREFIX}setCrypto [target] [val] [reason: optional] (val must be an integer)")
         return
     
-    if ctx.guild.id in constants.bankExceptions:
-        id = constants.bankExceptions[ctx.guild.id]
+    if ctx.guild.id in constants.BANKEXCEPTIONS:
+        id = constants.BANKEXCEPTIONS[ctx.guild.id]
     else:
         id = ctx.guild.id
     coins = fileHelper.json_read(constants.DATAPATH + str(id) + "-crypto.json")
@@ -181,8 +186,8 @@ async def createCrypto(ctx, cryptoName=""):
     if discordTypeConversion.pingtoid(cryptoName) is not None:
         await ctx.send(f"Crypto name cannot be a ping.")
 
-    if ctx.guild.id in constants.bankExceptions:
-        id = constants.bankExceptions[ctx.guild.id]
+    if ctx.guild.id in constants.BANKEXCEPTIONS:
+        id = constants.BANKEXCEPTIONS[ctx.guild.id]
     else:
         id = ctx.guild.id
     coins = fileHelper.json_read(constants.DATAPATH + str(id) + "-crypto.json")
@@ -204,8 +209,8 @@ async def createCrypto(ctx, cryptoName=""):
 
 @commands.Command
 async def deleteCrypto(ctx):
-    if ctx.guild.id in constants.bankExceptions:
-        id = constants.bankExceptions[ctx.guild.id]
+    if ctx.guild.id in constants.BANKEXCEPTIONS:
+        id = constants.BANKEXCEPTIONS[ctx.guild.id]
     else:
         id = ctx.guild.id
     coins = fileHelper.json_read(constants.DATAPATH + str(id) + "-crypto.json")
@@ -218,8 +223,8 @@ async def deleteCrypto(ctx):
         await ctx.send(f"You do not own a crypto. You can create one with {constants.PREFIX}createCrypto.")
         return
 
-    if ctx.guild.id in constants.bankExceptions:
-        id = constants.bankExceptions[ctx.guild.id]
+    if ctx.guild.id in constants.BANKEXCEPTIONS:
+        id = constants.BANKEXCEPTIONS[ctx.guild.id]
     else:
         id = ctx.guild.id
     
@@ -235,8 +240,8 @@ async def deleteCrypto(ctx):
 
 @commands.Command
 async def confirmDeletion(ctx):
-    if ctx.guild.id in constants.bankExceptions:
-        id = constants.bankExceptions[ctx.guild.id]
+    if ctx.guild.id in constants.BANKEXCEPTIONS:
+        id = constants.BANKEXCEPTIONS[ctx.guild.id]
     else:
         id = ctx.guild.id
 
@@ -245,8 +250,8 @@ async def confirmDeletion(ctx):
         await ctx.send(f"There is nothing awaiting confirmation.")
         return
     
-    if ctx.guild.id in constants.bankExceptions:
-        id = constants.bankExceptions[ctx.guild.id]
+    if ctx.guild.id in constants.BANKEXCEPTIONS:
+        id = constants.BANKEXCEPTIONS[ctx.guild.id]
     else:
         id = ctx.guild.id
     coins = fileHelper.json_read(constants.DATAPATH + str(id) + "-crypto.json")
@@ -266,8 +271,8 @@ async def confirmDeletion(ctx):
 
 @commands.Command
 async def cancelDeletion(ctx):
-    if ctx.guild.id in constants.bankExceptions:
-        id = constants.bankExceptions[ctx.guild.id]
+    if ctx.guild.id in constants.BANKEXCEPTIONS:
+        id = constants.BANKEXCEPTIONS[ctx.guild.id]
     else:
         id = ctx.guild.id
     
@@ -283,9 +288,12 @@ async def cancelDeletion(ctx):
     await ctx.send(f"Cancelled deletion.")
 
 @commands.Command
-async def listCrypto(ctx):
-    if ctx.guild.id in constants.bankExceptions:
-        id = constants.bankExceptions[ctx.guild.id]
+async def listCrypto(ctx, *args: tuple):
+    if len(args) > 0:
+        await ctx.send(f"Usage: {constants.PREFIX}listCrypto\nTo show a specific crypto, use {constants.PREFIX}showCrypto [crypto]")
+        return
+    if ctx.guild.id in constants.BANKEXCEPTIONS:
+        id = constants.BANKEXCEPTIONS[ctx.guild.id]
     else:
         id = ctx.guild.id
     
@@ -311,8 +319,8 @@ async def deleteUser(ctx, target=""):
     else:
         targetName = discordTypeConversion.idtoname(ctx, targetID)
     
-    if ctx.guild.id in constants.bankExceptions:
-        id = constants.bankExceptions[ctx.guild.id]
+    if ctx.guild.id in constants.BANKEXCEPTIONS:
+        id = constants.BANKEXCEPTIONS[ctx.guild.id]
     else:
         id = ctx.guild.id
     
@@ -363,8 +371,8 @@ async def transferCrypto(ctx, arg1="", arg2="", amount=None, *reason: tuple):
 async def transferCryptoUser(ctx, cryptoName: str, userToID: str, amount: int, reason: tuple):
     userFromID = ctx.author.id
 
-    if ctx.guild.id in constants.bankExceptions:
-        id = constants.bankExceptions[ctx.guild.id]
+    if ctx.guild.id in constants.BANKEXCEPTIONS:
+        id = constants.BANKEXCEPTIONS[ctx.guild.id]
     else:
         id = ctx.guild.id
 
@@ -410,8 +418,8 @@ async def transferCryptoOwner(ctx, userFromID: str, userToID: str, amount: int, 
     userFromName = discordTypeConversion.idtoname(ctx, userFromID)
     userToName = discordTypeConversion.idtoname(ctx, userToID)
 
-    if ctx.guild.id in constants.bankExceptions:
-        id = constants.bankExceptions[ctx.guild.id]
+    if ctx.guild.id in constants.BANKEXCEPTIONS:
+        id = constants.BANKEXCEPTIONS[ctx.guild.id]
     else:
         id = ctx.guild.id
     coins = fileHelper.json_read(constants.DATAPATH + str(id) + "-crypto.json")
@@ -456,8 +464,8 @@ async def renameCrypto(ctx, newName=""):
     if newName == "":
         await ctx.send(f"Usage: {constants.PREFIX}renameCrypto [newName]")
         return
-    if ctx.guild.id in constants.bankExceptions:
-        id = constants.bankExceptions[ctx.guild.id]
+    if ctx.guild.id in constants.BANKEXCEPTIONS:
+        id = constants.BANKEXCEPTIONS[ctx.guild.id]
     else:
         id = ctx.guild.id
     coins = fileHelper.json_read(constants.DATAPATH + str(id) + "-crypto.json")
