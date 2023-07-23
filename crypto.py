@@ -29,7 +29,9 @@ async def showCrypto(ctx, crypto=""):
             id = ctx.guild.id
         
         for coin in fh.json_read(constants.DATAPATH + str(id) + "-crypto.json"):
-            await showCrypto(coin)
+            await showCrypto(ctx, coin)
+        
+        return
 
     if tc.pingtoid(crypto) is not None:
         target_id = tc.pingtoid(crypto)
