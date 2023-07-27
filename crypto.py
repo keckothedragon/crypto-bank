@@ -297,11 +297,13 @@ async def deleteCrypto(ctx):
 
     deleted = fh.json_read(constants.DATAPATH + str(id) + "-deleted.json")
 
-    deleted[ctx.author.id] = {"name": key, "data": popped_data}
+    deleted[str(ctx.author.id)] = {"name": key, "data": popped_data}
 
     fh.json_write(constants.DATAPATH + str(id) + "-deleted.json", deleted)
 
-    await ctx.send(f"Successfully deleted \"{key}\".\nTo restore {key}, use {constants.PREFIX}restoreCrypto.")
+    name = deleted[str(ctx.author.id)]["data"]["DisplayName"]
+
+    await ctx.send(f"Successfully deleted \"{name}\".\nTo restore {name}, use {constants.PREFIX}restoreCrypto.")
 
 @client.command()
 async def restoreCrypto(ctx):
@@ -330,7 +332,9 @@ async def restoreCrypto(ctx):
 
     fh.json_write(constants.DATAPATH + str(id) + "-crypto.json", coins)
 
-    await ctx.send(f"Successfully restored \"{key}\".")
+    name = data["DisplayName"]
+
+    await ctx.send(f"Successfully restored \"{name}\".")
 
 @client.command()
 async def listCrypto(ctx, *args: tuple):
