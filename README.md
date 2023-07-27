@@ -1,6 +1,6 @@
 # Crypto Bank
 ## Setup
-Thank you for downloading the code for my bot, Crypto Bank! Crypto Bank allows you to keep track of made up points with others in your Discord servers. I chose to call it Crypto Bank because it started as a joke with friends where each person had their own CryptoCurrency (ex. "John Coin", "Bob Coin", etc.). All files must be placed in the same directory. The data will automatically be stored in a "data" folder in the same directory as the rest. This can be changed by changing the DATAPATH variable in constants.py.
+Thank you for downloading the code for my bot, Crypto Bank! Crypto Bank allows you to keep track of made up points with others in your Discord servers. I chose to call it Crypto Bank because it started as a joke with friends where each person had their own crypto currency (ex. "John Coin", "Bob Coin", etc.). All files must be placed in the same directory. The data will automatically be stored in a "data" folder in the same directory as the rest. This can be changed by changing the DATAPATH variable in constants.py.
 
 If you want to run the code for yourself, the main file to run is crypto.py, as you may have guessed. Before running, you must create a file called ".env" with a variable TOKEN containing the bot's token. The bot only needs read and send messages permissions in the server you are adding it to, but I generally tend to give my bots administrator to be safe.
 
@@ -23,13 +23,10 @@ setCrypto takes three arguments: the person to set the value of crypto, the new 
 createCrypto takes one argument: the name of the crypto. It then creates a crypto with that name. If the user already has created a crypto, they are not allowed to make another crypto. Also keep in mind that the names cannot have spaces in them due to the way Discord's commands work.
 
 ### deleteCrypto
-deleteCrypto does not take any arguments. It gives a dialogue to the user to make them confirm they want to delete their crypto, then passes the torch off to confirmDeletion and cancelDeletion. The awaiting confirmations are stored in a pickle file.
+deleteCrypto does not take any arguments. It will delete the user's crypto if they own one. After using this command, restoreCrypto can be used to restore a deleted crypto. Keep in mind that if a user deletes a crypto then creates a new one, it can no longer be restored.
 
-### confirmDeletion
-confirmDeletion does not take any arguments. If the user has a deletion that is awaiting confirmation, it will occur. If not, the user will be notified and nothing will happen.
-
-### cancelDeletion
-cancelDeletion does not take any arguments. If the user has a deletion that is awaiting confirmation, it will be cancelled. If not, the user will be notified and nothing will happen.
+### restoreCrypto
+restoreCrypto does not take any arguments. It will restore a previously deleted crypto if the user does not have one. If the user has created a crypto since they originally deleted a crypto, they will not be able to restore it.
 
 ### listCrypto
 listCrypto does not take any arguments. listCrypto will show the names of all crypto stored.

@@ -10,7 +10,9 @@ load_dotenv(".env")
 
 client = commands.Bot(intents=constants.INTENTS, command_prefix=constants.PREFIX)
 
-@commands.Command
+client.remove_command("help") # it freaks out if i put it at the bottom so its going up here
+
+@client.command()
 async def showCrypto(ctx, crypto=""):
     if crypto == "":
         await ctx.send(f"Usage: {constants.PREFIX}showCrypto [name of crypto]")
@@ -95,7 +97,7 @@ async def showCrypto(ctx, crypto=""):
     
     await ctx.send(msg)
 
-@commands.Command
+@client.command()
 async def addCrypto(ctx, target="", val=None, *reason: tuple):
     if target == "" or val is None:
         await ctx.send(f"Usage: {constants.PREFIX}addCrypto: [target] [value] [reason: optional]")
@@ -144,6 +146,8 @@ async def addCrypto(ctx, target="", val=None, *reason: tuple):
 
     msg = f"{val} coins added to {target_name}.\nThey now have {num} coins. (Rank #{placement} in {user_coin})"
 
+    show = False
+
     if reason != ():
         reason = list(reason)
 
@@ -153,8 +157,6 @@ async def addCrypto(ctx, target="", val=None, *reason: tuple):
         if reason[-1] in ["-s", "--show"]:
             reason.pop(-1)
             show = True
-        else:
-            show = False
 
         if reason != []:
             reason = " ".join(reason)
@@ -166,7 +168,7 @@ async def addCrypto(ctx, target="", val=None, *reason: tuple):
         await ctx.send("New standings:\n")
         await showCrypto(ctx, user_coin)
 
-@commands.Command
+@client.command()
 async def setCrypto(ctx, target="", val=None, *reason: tuple):
     if target == "" or val is None:
         await ctx.send(f"Usage: {constants.PREFIX}setCrypto [target] [val] [reason: optional]")
@@ -212,6 +214,9 @@ async def setCrypto(ctx, target="", val=None, *reason: tuple):
     placement = tc.get_placement(ctx, target_id, user_coin)
     
     msg = f"Succesfully set {target_name}'s coins to {num}. (Rank #{placement} in {user_coin})"
+
+    show = False
+
     if reason != ():
         reason = list(reason)
 
@@ -221,8 +226,6 @@ async def setCrypto(ctx, target="", val=None, *reason: tuple):
         if reason[-1] in ["-s", "--show"]:
             reason.pop(-1)
             show = True
-        else:
-            show = False
 
         if reason != []:
             reason = " ".join(reason)
@@ -234,7 +237,7 @@ async def setCrypto(ctx, target="", val=None, *reason: tuple):
         await ctx.send("New standings:\n")
         await showCrypto(ctx, user_coin)
 
-@commands.Command
+@client.command()
 async def createCrypto(ctx, crypto_name=""):
     if crypto_name == "":
         await ctx.send(f"Usage: {constants.PREFIX}createCrypto [name]")
@@ -262,9 +265,14 @@ async def createCrypto(ctx, crypto_name=""):
 
     fh.json_write(constants.DATAPATH + str(id) + "-crypto.json", coins)
 
+    deleted = fh.json_read(constants.DATAPATH + str(id) + "-deleted.json")
+    if str(ctx.author.id) in deleted:
+        del deleted[str(ctx.author.id)]
+    fh.json_write(constants.DATAPATH + str(id) + "-deleted.json", deleted)
+
     await ctx.send(f"{crypto_name} was succesfully created.")
 
-@commands.Command
+@client.command()
 async def deleteCrypto(ctx):
     if ctx.guild.id in constants.BANKEXCEPTIONS:
         id = constants.BANKEXCEPTIONS[ctx.guild.id]
@@ -279,72 +287,52 @@ async def deleteCrypto(ctx):
     if not user_own:
         await ctx.send(f"You do not own a crypto. You can create one with {constants.PREFIX}createCrypto.")
         return
-
-    if ctx.guild.id in constants.BANKEXCEPTIONS:
-        id = constants.BANKEXCEPTIONS[ctx.guild.id]
-    else:
-        id = ctx.guild.id
-    
-    confirmation: set = fh.pickle_read(constants.DATAPATH + str(id) + "-confirmation.pickle")
-    if ctx.author.id in confirmation:
-        await ctx.send(f"You still have an unconfirmed command. Please run {constants.PREFIX}confirmDeletion to confirm or {constants.PREFIX}cancelDeletion to cancel.")
-        return
-    confirmation.add(ctx.author.id)
-
-    fh.pickle_write(constants.DATAPATH + str(id) + "-confirmation.pickle", confirmation)
-    
-    await ctx.send(f"This is a dangerous command. Please run {constants.PREFIX}confirmDeletion to confirm deletion.")
-
-@commands.Command
-async def confirmDeletion(ctx):
-    if ctx.guild.id in constants.BANKEXCEPTIONS:
-        id = constants.BANKEXCEPTIONS[ctx.guild.id]
-    else:
-        id = ctx.guild.id
-
-    confirmation: set = fh.pickle_read(constants.DATAPATH + str(id) + "-confirmation.pickle")
-    if ctx.author.id not in confirmation:
-        await ctx.send(f"There is nothing awaiting confirmation.")
-        return
-    
-    if ctx.guild.id in constants.BANKEXCEPTIONS:
-        id = constants.BANKEXCEPTIONS[ctx.guild.id]
-    else:
-        id = ctx.guild.id
-    coins = fh.json_read(constants.DATAPATH + str(id) + "-crypto.json")
     
     for key, value in coins.items():
         if value["Owner"] == ctx.author.id:
-            del coins[key]
+            popped_data = coins.pop(key)
             break
 
     fh.json_write(constants.DATAPATH + str(id) + "-crypto.json", coins)
 
-    confirmation.remove(ctx.author.id)
-    
-    fh.pickle_write(constants.DATAPATH + str(id) + "-confirmation.pickle", confirmation)
+    deleted = fh.json_read(constants.DATAPATH + str(id) + "-deleted.json")
 
-    await ctx.send(f"Successfully deleted \"{key}\".")
+    deleted[ctx.author.id] = {"name": key, "data": popped_data}
 
-@commands.Command
-async def cancelDeletion(ctx):
+    fh.json_write(constants.DATAPATH + str(id) + "-deleted.json", deleted)
+
+    await ctx.send(f"Successfully deleted \"{key}\".\nTo restore {key}, use {constants.PREFIX}restoreCrypto.")
+
+@client.command()
+async def restoreCrypto(ctx):
     if ctx.guild.id in constants.BANKEXCEPTIONS:
         id = constants.BANKEXCEPTIONS[ctx.guild.id]
     else:
         id = ctx.guild.id
     
-    confirmation = fh.pickle_read(constants.DATAPATH + str(id) + "-confirmation.pickle")
-    if ctx.author.id not in confirmation:
-        await ctx.send("There is nothing awaiting confirmation.")
+    deleted = fh.json_read(constants.DATAPATH + str(id) + "-deleted.json")
+
+    user_id = str(ctx.author.id)
+
+    if user_id not in deleted:
+        await ctx.send("No crypto to restore.")
         return
     
-    confirmation.remove(ctx.author.id)
-    
-    fh.pickle_write(constants.DATAPATH + str(id) + "-confirmation.pickle", confirmation)
-    
-    await ctx.send(f"Cancelled deletion.")
+    coins = fh.json_read(constants.DATAPATH + str(id) + "-crypto.json")
 
-@commands.Command
+    key = deleted[user_id]["name"]
+    data = deleted[user_id]["data"]
+    coins[key] = data
+
+    del deleted[user_id]
+
+    fh.json_write(constants.DATAPATH + str(id) + "-deleted.json", deleted)
+
+    fh.json_write(constants.DATAPATH + str(id) + "-crypto.json", coins)
+
+    await ctx.send(f"Successfully restored \"{key}\".")
+
+@client.command()
 async def listCrypto(ctx, *args: tuple):
     if len(args) > 0:
         await ctx.send(f"Usage: {constants.PREFIX}listCrypto\nTo show a specific crypto, use {constants.PREFIX}showCrypto [crypto]")
@@ -363,7 +351,7 @@ async def listCrypto(ctx, *args: tuple):
     
     await ctx.send(msg)
 
-@commands.Command
+@client.command()
 async def deleteUser(ctx, target=""):
     if target == "":
         await ctx.send(f"Usage: {constants.PREFIX}deleteUser [target]")
@@ -401,7 +389,7 @@ async def deleteUser(ctx, target=""):
     
     await ctx.send(f"Successfully removed {target_name} from your crypto.\n{target_name} had {popped_data} coins.")
 
-@commands.Command
+@client.command()
 async def transferCrypto(ctx, arg1="", arg2="", amount=None, *reason: tuple):
     # exception handling fun
     try:
@@ -466,6 +454,8 @@ async def transferCryptoUser(ctx, crypto_name: str, user_to_id: str, amount: int
 {user_to_name} now has {coins[crypto_name]['Bank'][str(user_to_id)]['Amt']}. (Rank #{tc.get_placement(ctx, user_to_id, crypto_name)} in {crypto_name})\n\
 You now have {coins[crypto_name]['Bank'][str(user_from_id)]['Amt']}. (Rank #{tc.get_placement(ctx, user_from_id, crypto_name)} in {crypto_name})"
 
+    show = False
+
     if reason != ():
         reason = list(reason)
 
@@ -475,8 +465,6 @@ You now have {coins[crypto_name]['Bank'][str(user_from_id)]['Amt']}. (Rank #{tc.
         if reason[-1] in ["-s", "--show"]:
             reason.pop(-1)
             show = True
-        else:
-            show = False
 
         if reason != []:
             reason = " ".join(reason)
@@ -529,6 +517,8 @@ async def transferCryptoOwner(ctx, user_from_id: str, user_to_id: str, amount: i
 {user_from_name} now has {coins[user_coin]['Bank'][str(user_from_id)]['Amt']} coins. (Rank #{tc.get_placement(ctx, user_from_id, user_coin)} in {user_coin})\n\
 {user_to_name} now has {coins[user_coin]['Bank'][str(user_to_id)]['Amt']} coins. (Rank #{tc.get_placement(ctx, user_to_id, user_coin)} in {user_coin})"
     
+    show = False
+
     if reason != ():
         reason = list(reason)
 
@@ -538,8 +528,6 @@ async def transferCryptoOwner(ctx, user_from_id: str, user_to_id: str, amount: i
         if reason[-1] in ["-s", "--show"]:
             reason.pop(-1)
             show = True
-        else:
-            show = False
 
         if reason != []:
             reason = " ".join(reason)
@@ -551,7 +539,7 @@ async def transferCryptoOwner(ctx, user_from_id: str, user_to_id: str, amount: i
         await ctx.send("New standings:\n")
         await showCrypto(ctx, user_coin)
     
-@commands.Command
+@client.command()
 async def renameCrypto(ctx, new_name=""):
     if new_name == "":
         await ctx.send(f"Usage: {constants.PREFIX}renameCrypto [newName]")
@@ -574,24 +562,11 @@ async def renameCrypto(ctx, new_name=""):
     fh.json_write(constants.DATAPATH + str(id) + "-crypto.json", coins)
     await ctx.send(f"Successfully renamed {user_coin} to {new_name}.")
 
-@commands.Command
-async def cryptoHelp(ctx, command=""):
+@client.command(aliases=['cryptoHelp'])
+async def help(ctx, command=""):
     if command.lower() in constants.HELPINDICES:
         await ctx.send(constants.HELP[constants.HELPINDICES[command.lower()]])
     else:
         await ctx.send(constants.HELPMSG)
-
-client.add_command(showCrypto)
-client.add_command(addCrypto)
-client.add_command(setCrypto)
-client.add_command(createCrypto)
-client.add_command(deleteCrypto)
-client.add_command(confirmDeletion)
-client.add_command(cancelDeletion)
-client.add_command(listCrypto)
-client.add_command(deleteUser)
-client.add_command(transferCrypto)
-client.add_command(renameCrypto)
-client.add_command(cryptoHelp)
 
 client.run(os.getenv("TOKEN"))
