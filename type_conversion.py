@@ -15,11 +15,11 @@ def idtoname(ctx, id) -> str:
 
 def get_placement(ctx, id, coin) -> int:
     id = str(id)
-    if ctx.guild.id in constants.BANKEXCEPTIONS:
-        guild_id = constants.BANKEXCEPTIONS[ctx.guild.id]
+    if ctx.guild.id in constants.BANK_EXCEPTIONS:
+        guild_id = constants.BANK_EXCEPTIONS[ctx.guild.id]
     else:
         guild_id = ctx.guild.id
-    data = file_helper.json_read(constants.DATAPATH + str(guild_id) + "-crypto.json")
+    data = file_helper.json_read(constants.DATA_PATH + str(guild_id) + "-crypto.json")
     if coin not in data:
         return None
     if id not in data[coin]["Bank"]:

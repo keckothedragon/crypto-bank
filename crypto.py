@@ -21,29 +21,15 @@ async def showCrypto(ctx, crypto=""):
     if crypto == "self":
         crypto = f"<@{ctx.author.id}>"
 
-    if crypto == "all":
-        # debug
-        await ctx.send("DEBUG:")
-
-        if ctx.guild.id in constants.BANKEXCEPTIONS:
-            id = constants.BANKEXCEPTIONS[ctx.guild.id]
-        else:
-            id = ctx.guild.id
-        
-        for coin in fh.json_read(constants.DATAPATH + str(id) + "-crypto.json"):
-            await showCrypto(ctx, coin)
-        
-        return
-
     if tc.pingtoid(crypto) is not None:
         target_id = tc.pingtoid(crypto)
         target_name = tc.idtoname(ctx, target_id)
         
-        if ctx.guild.id in constants.BANKEXCEPTIONS:
-            id = constants.BANKEXCEPTIONS[ctx.guild.id]
+        if ctx.guild.id in constants.BANK_EXCEPTIONS:
+            id = constants.BANK_EXCEPTIONS[ctx.guild.id]
         else:
             id = ctx.guild.id
-        coins = fh.json_read(constants.DATAPATH + str(id) + "-crypto.json")
+        coins = fh.json_read(constants.DATA_PATH + str(id) + "-crypto.json")
         
         backpack = {}
         for coin in coins:
@@ -67,11 +53,11 @@ async def showCrypto(ctx, crypto=""):
     else:
         crypto = crypto.lower()
         
-        if ctx.guild.id in constants.BANKEXCEPTIONS:
-            id = constants.BANKEXCEPTIONS[ctx.guild.id]
+        if ctx.guild.id in constants.BANK_EXCEPTIONS:
+            id = constants.BANK_EXCEPTIONS[ctx.guild.id]
         else:
             id = ctx.guild.id
-        coins = fh.json_read(constants.DATAPATH + str(id) + "-crypto.json")
+        coins = fh.json_read(constants.DATA_PATH + str(id) + "-crypto.json")
         
         if crypto not in coins:
             await ctx.send(f"Invalid crypto name. To see a list of all crypto, use {constants.PREFIX}listCrypto.")
@@ -93,7 +79,7 @@ async def showCrypto(ctx, crypto=""):
         if not msg:
             msg = f"There is no data for {crypto}."
     
-    fh.json_write(constants.DATAPATH + str(id) + "-crypto.json", coins)
+    fh.json_write(constants.DATA_PATH + str(id) + "-crypto.json", coins)
     
     await ctx.send(msg)
 
@@ -117,11 +103,11 @@ async def addCrypto(ctx, target="", val=None, *reason: tuple):
         await ctx.send(f"Usage: {constants.PREFIX}addCrypto: [target] [value] [reason: optional] (value must be an integer)")
         return
     
-    if ctx.guild.id in constants.BANKEXCEPTIONS:
-        id = constants.BANKEXCEPTIONS[ctx.guild.id]
+    if ctx.guild.id in constants.BANK_EXCEPTIONS:
+        id = constants.BANK_EXCEPTIONS[ctx.guild.id]
     else:
         id = ctx.guild.id
-    coins = fh.json_read(constants.DATAPATH + str(id) + "-crypto.json")
+    coins = fh.json_read(constants.DATA_PATH + str(id) + "-crypto.json")
 
     user_coin = ""
     for key, value in coins.items():
@@ -138,13 +124,13 @@ async def addCrypto(ctx, target="", val=None, *reason: tuple):
 
     coins[user_coin]["Bank"][str(target_id)]["Name"] = target_name # updating name in database
 
-    fh.json_write(constants.DATAPATH + str(id) + "-crypto.json", coins)
+    fh.json_write(constants.DATA_PATH + str(id) + "-crypto.json", coins)
 
     num = coins[user_coin]["Bank"][str(target_id)]["Amt"]
     
     placement = tc.get_placement(ctx, target_id, user_coin)
 
-    msg = f"{val} coins added to {target_name}.\nThey now have {num} coins. (Rank #{placement} in {user_coin})"
+    msg = f"{val} coins added to {target_name}.\nThey now have {num} coins. (Rank #{placement} in {coins[user_coin]['DisplayName']})"
 
     show = False
 
@@ -187,11 +173,11 @@ async def setCrypto(ctx, target="", val=None, *reason: tuple):
         await ctx.send(f"Usage: {constants.PREFIX}setCrypto [target] [val] [reason: optional] (val must be an integer)")
         return
     
-    if ctx.guild.id in constants.BANKEXCEPTIONS:
-        id = constants.BANKEXCEPTIONS[ctx.guild.id]
+    if ctx.guild.id in constants.BANK_EXCEPTIONS:
+        id = constants.BANK_EXCEPTIONS[ctx.guild.id]
     else:
         id = ctx.guild.id
-    coins = fh.json_read(constants.DATAPATH + str(id) + "-crypto.json")
+    coins = fh.json_read(constants.DATA_PATH + str(id) + "-crypto.json")
 
     user_coin = ""
     for key, value in coins.items():
@@ -207,13 +193,13 @@ async def setCrypto(ctx, target="", val=None, *reason: tuple):
         coins[user_coin]["Bank"][str(target_id)]["Amt"] = val
         coins[user_coin]["Bank"][str(target_id)]["Name"] = target_name # updating name in database
 
-    fh.json_write(constants.DATAPATH + str(id) + "-crypto.json", coins)
+    fh.json_write(constants.DATA_PATH + str(id) + "-crypto.json", coins)
 
     num = coins[user_coin]["Bank"][str(target_id)]["Amt"]
 
     placement = tc.get_placement(ctx, target_id, user_coin)
     
-    msg = f"Succesfully set {target_name}'s coins to {num}. (Rank #{placement} in {user_coin})"
+    msg = f"Succesfully set {target_name}'s coins to {num}. (Rank #{placement} in {coins[user_coin]['DisplayName']})"
 
     show = False
 
@@ -246,11 +232,11 @@ async def createCrypto(ctx, crypto_name=""):
     if tc.pingtoid(crypto_name) is not None:
         await ctx.send(f"Crypto name cannot be a ping.")
 
-    if ctx.guild.id in constants.BANKEXCEPTIONS:
-        id = constants.BANKEXCEPTIONS[ctx.guild.id]
+    if ctx.guild.id in constants.BANK_EXCEPTIONS:
+        id = constants.BANK_EXCEPTIONS[ctx.guild.id]
     else:
         id = ctx.guild.id
-    coins = fh.json_read(constants.DATAPATH + str(id) + "-crypto.json")
+    coins = fh.json_read(constants.DATA_PATH + str(id) + "-crypto.json")
     
     for key, value in coins.items():
         if ctx.author.id == value["Owner"]:
@@ -263,22 +249,22 @@ async def createCrypto(ctx, crypto_name=""):
     
     coins[real_name] = {"DisplayName": crypto_name, "Owner": ctx.author.id, "Bank": {}}
 
-    fh.json_write(constants.DATAPATH + str(id) + "-crypto.json", coins)
+    fh.json_write(constants.DATA_PATH + str(id) + "-crypto.json", coins)
 
-    deleted = fh.json_read(constants.DATAPATH + str(id) + "-deleted.json")
+    deleted = fh.json_read(constants.DATA_PATH + str(id) + "-deleted.json")
     if str(ctx.author.id) in deleted:
         del deleted[str(ctx.author.id)]
-    fh.json_write(constants.DATAPATH + str(id) + "-deleted.json", deleted)
+    fh.json_write(constants.DATA_PATH + str(id) + "-deleted.json", deleted)
 
     await ctx.send(f"{crypto_name} was succesfully created.")
 
 @client.command()
 async def deleteCrypto(ctx):
-    if ctx.guild.id in constants.BANKEXCEPTIONS:
-        id = constants.BANKEXCEPTIONS[ctx.guild.id]
+    if ctx.guild.id in constants.BANK_EXCEPTIONS:
+        id = constants.BANK_EXCEPTIONS[ctx.guild.id]
     else:
         id = ctx.guild.id
-    coins = fh.json_read(constants.DATAPATH + str(id) + "-crypto.json")
+    coins = fh.json_read(constants.DATA_PATH + str(id) + "-crypto.json")
     
     user_own = False
     for coin in coins:
@@ -293,13 +279,13 @@ async def deleteCrypto(ctx):
             popped_data = coins.pop(key)
             break
 
-    fh.json_write(constants.DATAPATH + str(id) + "-crypto.json", coins)
+    fh.json_write(constants.DATA_PATH + str(id) + "-crypto.json", coins)
 
-    deleted = fh.json_read(constants.DATAPATH + str(id) + "-deleted.json")
+    deleted = fh.json_read(constants.DATA_PATH + str(id) + "-deleted.json")
 
     deleted[str(ctx.author.id)] = {"name": key, "data": popped_data}
 
-    fh.json_write(constants.DATAPATH + str(id) + "-deleted.json", deleted)
+    fh.json_write(constants.DATA_PATH + str(id) + "-deleted.json", deleted)
 
     name = deleted[str(ctx.author.id)]["data"]["DisplayName"]
 
@@ -307,12 +293,12 @@ async def deleteCrypto(ctx):
 
 @client.command()
 async def restoreCrypto(ctx):
-    if ctx.guild.id in constants.BANKEXCEPTIONS:
-        id = constants.BANKEXCEPTIONS[ctx.guild.id]
+    if ctx.guild.id in constants.BANK_EXCEPTIONS:
+        id = constants.BANK_EXCEPTIONS[ctx.guild.id]
     else:
         id = ctx.guild.id
     
-    deleted = fh.json_read(constants.DATAPATH + str(id) + "-deleted.json")
+    deleted = fh.json_read(constants.DATA_PATH + str(id) + "-deleted.json")
 
     user_id = str(ctx.author.id)
 
@@ -320,7 +306,7 @@ async def restoreCrypto(ctx):
         await ctx.send("No crypto to restore.")
         return
     
-    coins = fh.json_read(constants.DATAPATH + str(id) + "-crypto.json")
+    coins = fh.json_read(constants.DATA_PATH + str(id) + "-crypto.json")
 
     key = deleted[user_id]["name"]
     data = deleted[user_id]["data"]
@@ -328,9 +314,9 @@ async def restoreCrypto(ctx):
 
     del deleted[user_id]
 
-    fh.json_write(constants.DATAPATH + str(id) + "-deleted.json", deleted)
+    fh.json_write(constants.DATA_PATH + str(id) + "-deleted.json", deleted)
 
-    fh.json_write(constants.DATAPATH + str(id) + "-crypto.json", coins)
+    fh.json_write(constants.DATA_PATH + str(id) + "-crypto.json", coins)
 
     name = data["DisplayName"]
 
@@ -341,12 +327,12 @@ async def listCrypto(ctx, *args: tuple):
     if len(args) > 0:
         await ctx.send(f"Usage: {constants.PREFIX}listCrypto\nTo show a specific crypto, use {constants.PREFIX}showCrypto [crypto]")
         return
-    if ctx.guild.id in constants.BANKEXCEPTIONS:
-        id = constants.BANKEXCEPTIONS[ctx.guild.id]
+    if ctx.guild.id in constants.BANK_EXCEPTIONS:
+        id = constants.BANK_EXCEPTIONS[ctx.guild.id]
     else:
         id = ctx.guild.id
     
-    coins = fh.json_read(constants.DATAPATH + str(id) + "-crypto.json")
+    coins = fh.json_read(constants.DATA_PATH + str(id) + "-crypto.json")
     
     msg = "\n".join([str(coins[coin]["DisplayName"]) for coin in coins])
     
@@ -368,12 +354,12 @@ async def deleteUser(ctx, target=""):
     else:
         target_name = tc.idtoname(ctx, target_id)
     
-    if ctx.guild.id in constants.BANKEXCEPTIONS:
-        id = constants.BANKEXCEPTIONS[ctx.guild.id]
+    if ctx.guild.id in constants.BANK_EXCEPTIONS:
+        id = constants.BANK_EXCEPTIONS[ctx.guild.id]
     else:
         id = ctx.guild.id
     
-    coins = fh.json_read(constants.DATAPATH + str(id) + "-crypto.json")
+    coins = fh.json_read(constants.DATA_PATH + str(id) + "-crypto.json")
     
     user_coin = ""
     for key, value in coins.items():
@@ -389,7 +375,7 @@ async def deleteUser(ctx, target=""):
     
     popped_data = coins[user_coin]["Bank"].pop(str(target_id))["Amt"]
     
-    fh.json_write(constants.DATAPATH + str(id) + "-crypto.json", coins)
+    fh.json_write(constants.DATA_PATH + str(id) + "-crypto.json", coins)
     
     await ctx.send(f"Successfully removed {target_name} from your crypto.\n{target_name} had {popped_data} coins.")
 
@@ -422,12 +408,12 @@ async def transferCryptoUser(ctx, crypto_name: str, user_to_id: str, amount: int
 
     user_to_name = tc.idtoname(ctx, user_to_id)
 
-    if ctx.guild.id in constants.BANKEXCEPTIONS:
-        id = constants.BANKEXCEPTIONS[ctx.guild.id]
+    if ctx.guild.id in constants.BANK_EXCEPTIONS:
+        id = constants.BANK_EXCEPTIONS[ctx.guild.id]
     else:
         id = ctx.guild.id
 
-    coins = fh.json_read(constants.DATAPATH + str(id) + "-crypto.json")
+    coins = fh.json_read(constants.DATA_PATH + str(id) + "-crypto.json")
 
     if crypto_name.lower() not in coins:
         await ctx.send(f"{crypto_name} does not exist.")
@@ -452,11 +438,11 @@ async def transferCryptoUser(ctx, crypto_name: str, user_to_id: str, amount: int
     coins[crypto_name]["Bank"][str(user_from_id)]["Name"] = tc.idtoname(ctx, ctx.author.id) # updating name in database
     coins[crypto_name]["Bank"][str(user_to_id)]["Name"] = user_to_name # updating name in database
 
-    fh.json_write(constants.DATAPATH + str(id) + "-crypto.json", coins)
+    fh.json_write(constants.DATA_PATH + str(id) + "-crypto.json", coins)
 
     msg = f"Successfully transferred {amount} {display_name} to {user_to_name}.\n\
-{user_to_name} now has {coins[crypto_name]['Bank'][str(user_to_id)]['Amt']}. (Rank #{tc.get_placement(ctx, user_to_id, crypto_name)} in {crypto_name})\n\
-You now have {coins[crypto_name]['Bank'][str(user_from_id)]['Amt']}. (Rank #{tc.get_placement(ctx, user_from_id, crypto_name)} in {crypto_name})"
+{user_to_name} now has {coins[crypto_name]['Bank'][str(user_to_id)]['Amt']}. (Rank #{tc.get_placement(ctx, user_to_id, crypto_name)} in {display_name})\n\
+You now have {coins[crypto_name]['Bank'][str(user_from_id)]['Amt']}. (Rank #{tc.get_placement(ctx, user_from_id, crypto_name)} in {display_name})"
 
     show = False
 
@@ -484,11 +470,11 @@ async def transferCryptoOwner(ctx, user_from_id: str, user_to_id: str, amount: i
     user_from_name = tc.idtoname(ctx, user_from_id)
     user_to_name = tc.idtoname(ctx, user_to_id)
 
-    if ctx.guild.id in constants.BANKEXCEPTIONS:
-        id = constants.BANKEXCEPTIONS[ctx.guild.id]
+    if ctx.guild.id in constants.BANK_EXCEPTIONS:
+        id = constants.BANK_EXCEPTIONS[ctx.guild.id]
     else:
         id = ctx.guild.id
-    coins = fh.json_read(constants.DATAPATH + str(id) + "-crypto.json")
+    coins = fh.json_read(constants.DATA_PATH + str(id) + "-crypto.json")
     
     user_coin = ""
     for key, value in coins.items():
@@ -515,7 +501,7 @@ async def transferCryptoOwner(ctx, user_from_id: str, user_to_id: str, amount: i
     coins[user_coin]["Bank"][str(user_from_id)]["Name"] = user_from_name # updating name in database
     coins[user_coin]["Bank"][str(user_to_id)]["Name"] = user_to_name # updating name in database
 
-    fh.json_write(constants.DATAPATH + str(id) + "-crypto.json", coins)
+    fh.json_write(constants.DATA_PATH + str(id) + "-crypto.json", coins)
 
     msg = f"Successfully transferred {amount} coins from {user_from_name} to {user_to_name}.\n\
 {user_from_name} now has {coins[user_coin]['Bank'][str(user_from_id)]['Amt']} coins. (Rank #{tc.get_placement(ctx, user_from_id, user_coin)} in {user_coin})\n\
@@ -548,11 +534,11 @@ async def renameCrypto(ctx, new_name=""):
     if new_name == "":
         await ctx.send(f"Usage: {constants.PREFIX}renameCrypto [newName]")
         return
-    if ctx.guild.id in constants.BANKEXCEPTIONS:
-        id = constants.BANKEXCEPTIONS[ctx.guild.id]
+    if ctx.guild.id in constants.BANK_EXCEPTIONS:
+        id = constants.BANK_EXCEPTIONS[ctx.guild.id]
     else:
         id = ctx.guild.id
-    coins = fh.json_read(constants.DATAPATH + str(id) + "-crypto.json")
+    coins = fh.json_read(constants.DATA_PATH + str(id) + "-crypto.json")
     user_coin = ""
     for key, value in coins.items():
         if ctx.author.id == value["Owner"]:
@@ -563,14 +549,46 @@ async def renameCrypto(ctx, new_name=""):
     old_data = coins.pop(user_coin)
     old_data["DisplayName"] = new_name
     coins[new_name.lower()] = old_data
-    fh.json_write(constants.DATAPATH + str(id) + "-crypto.json", coins)
+    fh.json_write(constants.DATA_PATH + str(id) + "-crypto.json", coins)
     await ctx.send(f"Successfully renamed {user_coin} to {new_name}.")
+
+@client.command()
+async def debug(ctx):
+    if ctx.guild.id in constants.BANK_EXCEPTIONS:
+        id = constants.BANK_EXCEPTIONS[ctx.guild.id]
+    else:
+        id = ctx.guild.id
+    
+    coins = fh.json_read(constants.DATA_PATH + str(id) + "-crypto.json")
+
+    await ctx.send("Updating names...")
+
+    changes = 0
+    exceptions = 0
+    for coin in coins:
+        for user in coins[coin]["Bank"]:
+            try:
+                user_name = tc.idtoname(ctx, int(user))
+                if user_name != coins[coin]["Bank"][user]["Name"]:
+                    changes += 1
+                    coins[coin]["Bank"][user]["Name"] = user_name
+            except Exception as e:
+                print(e)
+                exceptions += 1
+                pass
+    
+    fh.json_write(constants.DATA_PATH + str(id) + "-crypto.json", coins)
+
+    await ctx.send(f"Updated {changes} names. Encountered {exceptions} exceptions.")
+
+
+
 
 @client.command(aliases=['cryptoHelp'])
 async def help(ctx, command=""):
-    if command.lower() in constants.HELPINDICES:
-        await ctx.send(constants.HELP[constants.HELPINDICES[command.lower()]])
+    if command.lower() in constants.HELP_INDICES:
+        await ctx.send(constants.HELP[constants.HELP_INDICES[command.lower()]])
     else:
-        await ctx.send(constants.HELPMSG)
+        await ctx.send(constants.HELP_MSG)
 
 client.run(os.getenv("TOKEN"))

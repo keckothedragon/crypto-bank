@@ -5,7 +5,7 @@ INTENTS = discord.Intents.all()
 
 PREFIX = "$"
 
-DATAPATH = "./data/"
+DATA_PATH = "./data/"
 
 HELP = [
     f'{PREFIX}showCrypto [name]: Shows standings for a specific crypto. ALT: {PREFIX}showCrypto [user]: Shows all crypto of a specific user (ping them).',
@@ -22,10 +22,10 @@ HELP = [
     f'{PREFIX}cryptoHelp: Shows this message. ALT: {PREFIX}cryptoHelp [command]: Shows help for a specific command.'
 ]
 
-HELPMSG = f"Commands (do not include brackets around arguments):\n* " + "\n* ".join(HELP)
-HELPMSG = HELPMSG.strip("\n* ")
+HELP_MSG = f"Commands (do not include brackets around arguments):\n* " + "\n* ".join(HELP)
+HELP_MSG = HELP_MSG.strip("\n* ")
 
-HELPINDICES = {
+HELP_INDICES = {
     "showcrypto": 0, "show": 0,
     "listcrypto": 1, "list": 1,
     "addcrypto": 2, "add": 2,
@@ -38,6 +38,6 @@ HELPINDICES = {
     "renamecrypto": 9, "rename": 9
 }
 
-BANKEXCEPTIONS = {1114372122509332651:915361057185357874}
+BANK_EXCEPTIONS = {1114372122509332651:915361057185357874}
 # you can change this to whatever you want to link to link two guilds' banks
 # see README for full details

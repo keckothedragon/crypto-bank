@@ -44,19 +44,22 @@ transferCrypto takes four arguments, the crypto to be used in the transaction, t
 ### renameCrypto
 renameCrypto takes one argument, the new name of the crypto. It will automatically rename the user's crypto to the new name. Crypto names cannot contain spaces.
 
+### debug
+This is only useful if for some reason you have an old database version and need to update. If you have just downloaded the code, there is no need to run this. If you have an old database version, you need to run update_database.py, then run this command to fetch names for all users.
+
 ### cryptoHelp
 cryptoHelp takes an optional argument: the command to show help for. If no argument is passed, cryptoHelp shows an abridged version of these explanations. If a command is passed, it will show help for that specific command.
 
 ## Miscellaneous stuff
 ### Constants
-You should not have to change too much about constants.py. The only variables you should modify are DATAPATH as mentioned earlier, and BANKEXCEPTIONS. BANKEXCEPTIONS is a way to link two servers and have them share crypto information. This is stored as a dictionary, where each key is the id of the guild that will be redirected, and the value is the id of the guild it will be redirected to.
+You should not have to change too much about constants.py. The only variables you should modify are DATA_PATH as mentioned earlier, and BANK_EXCEPTIONS. BANK_EXCEPTIONS is a way to link two servers and have them share crypto information. This is stored as a dictionary, where each key is the id of the guild that will be redirected, and the value is the id of the guild it will be redirected to.
 
 For example, if I wanted to link guild id 5 and guild id 10, I would have:
 
-BANKEXCEPTIONS = {5:10} or BANKEXCEPTIONS = {10:5}
+BANK_EXCEPTIONS = {5:10} or BANK_EXCEPTIONS = {10:5}
 
 It doesn't matter what order they are in, unless you have old data from a guild that you want to link, so if guild 10 had data you wanted to preserve, you would use
 
-BANKEXCEPTIONS = {5:10}
+BANK_EXCEPTIONS = {5:10}
 
 to have guild id 5 use guild id 10's data instead.
