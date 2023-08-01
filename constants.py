@@ -43,6 +43,6 @@ BANK_EXCEPTIONS = {1114372122509332651:915361057185357874}
 # you can change this to whatever you want to link to link two guilds' banks
 # see README for full details
 
-COIN_HIERARCHY = ["keckocoin", "mewhe"]
+COIN_HIERARCHY = ["keckocoin"]
 # change this to whatever you want to make certain cryptos always appear at the top of listCrypto
 # see README for full details
