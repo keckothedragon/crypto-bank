@@ -52,7 +52,13 @@ cryptoHelp takes an optional argument: the command to show help for. If no argum
 
 ## Miscellaneous stuff
 ### Constants
-You should not have to change too much about constants.py. The only variables you should modify are DATA_PATH as mentioned earlier, and BANK_EXCEPTIONS. BANK_EXCEPTIONS is a way to link two servers and have them share crypto information. This is stored as a dictionary, where each key is the id of the guild that will be redirected, and the value is the id of the guild it will be redirected to.
+You should not have to change too much about constants.py, but there are a few variables you may want to change. The only variables you should modify are DATA_PATH as mentioned earlier, PREFIX, BANK_EXCEPTIONS, and COIN_HIERARCHY.
+
+#### PREFIX
+PREFIX is simple. It is the prefix to be used whenever a command is called on discord. The only thing to keep in mind is that the help command may overlap with another bot, so it is recommended to keep it as "$".
+
+#### BANK_EXCEPTIONS
+BANK_EXCEPTIONS is a way to link two servers and have them share crypto information. This is stored as a dictionary, where each key is the id of the guild that will be redirected, and the value is the id of the guild it will be redirected to.
 
 For example, if I wanted to link guild id 5 and guild id 10, I would have:
 
@@ -63,3 +69,20 @@ It doesn't matter what order they are in, unless you have old data from a guild 
 BANK_EXCEPTIONS = {5:10}
 
 to have guild id 5 use guild id 10's data instead.
+
+#### COIN_HIERARCHY
+COIN_HIERACHY is somewhat complicated and mostly mundane. I only made it so I can ensure that specific cryptos appear at the top of the list when listCrypto is used.
+
+To use it, simply put the name of any crypto you want to be at the top of the list, all in lowercase. If there are any caps, it will not work. The order of the list determines the order of the redirected cryptos.
+
+For example, if I wanted Bobcoin and BillyCoin to be at the top of the list, I would have it like this:
+
+COIN_HIERARCHY = ["bobcoin", "billycoin"]
+
+If the list of coins was normally:
+
+JoeCoin, JamesBucks, Bobcoin, SamCoin, BillyCoin
+
+It would become:
+
+Bobcoin, BillyCoin, JoeCoin, JamesBucks, SamCoin

@@ -333,7 +333,14 @@ async def listCrypto(ctx, *args: tuple):
         id = ctx.guild.id
     
     coins = fh.json_read(constants.DATA_PATH + str(id) + "-crypto.json")
-    
+
+    try:
+        coins = tc.rearrange(coins)
+        fh.json_write(constants.DATA_PATH + str(id) + "-crypto.json", coins)
+    except:
+        # idk why there would be an error but just in case
+        coins = fh.json_read(constants.DATA_PATH + str(id) + "-crypto.json")
+
     msg = "\n".join([str(coins[coin]["DisplayName"]) for coin in coins])
     
     if not msg:
@@ -577,12 +584,11 @@ async def debug(ctx):
                 exceptions += 1
                 pass
     
+    coins = tc.rearrange(coins)
+    
     fh.json_write(constants.DATA_PATH + str(id) + "-crypto.json", coins)
 
     await ctx.send(f"Updated {changes} names. Encountered {exceptions} exceptions.")
-
-
-
 
 @client.command(aliases=['cryptoHelp'])
 async def help(ctx, command=""):
