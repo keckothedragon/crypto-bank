@@ -541,11 +541,13 @@ async def renameCrypto(ctx, new_name=""):
     if new_name == "":
         await ctx.send(f"Usage: {constants.PREFIX}renameCrypto [newName]")
         return
+    
     if ctx.guild.id in constants.BANK_EXCEPTIONS:
         id = constants.BANK_EXCEPTIONS[ctx.guild.id]
     else:
         id = ctx.guild.id
     coins = fh.json_read(constants.DATA_PATH + str(id) + "-crypto.json")
+
     user_coin = ""
     for key, value in coins.items():
         if ctx.author.id == value["Owner"]:
@@ -553,11 +555,16 @@ async def renameCrypto(ctx, new_name=""):
     if user_coin == "":
         await ctx.send(f"You do not own a crypto. You can create one with {constants.PREFIX}createCrypto.")
         return
+    
     old_data = coins.pop(user_coin)
+    old_name = old_data["DisplayName"]
+
     old_data["DisplayName"] = new_name
     coins[new_name.lower()] = old_data
+    
     fh.json_write(constants.DATA_PATH + str(id) + "-crypto.json", coins)
-    await ctx.send(f"Successfully renamed {user_coin} to {new_name}.")
+
+    await ctx.send(f"Successfully renamed {old_name} to {new_name}.")
 
 @client.command()
 async def debug(ctx):
