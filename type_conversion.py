@@ -32,3 +32,16 @@ def get_placement(ctx, id, coin) -> int:
         placed.append(value["Amt"])
     placed.sort(reverse=True)
     return placed.index(val) + 1
+
+def rearrange(coins: dict) -> dict:
+    new_coins = {}
+    for coin in coins:
+        if coin in constants.COIN_HIERARCHY:
+            for h in constants.COIN_HIERARCHY[coin]:
+                # h for hierarchy its a good var name i swear
+                if h in coins:
+                    new_coins[h] = coins[h]
+
+    coins = new_coins | coins
+    
+    return coins
