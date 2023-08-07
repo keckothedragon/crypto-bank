@@ -34,13 +34,16 @@ def get_placement(ctx, id, coin) -> int:
     return placed.index(val) + 1
 
 def rearrange(coins: dict) -> dict:
+    user_coins = {}
+    for key, value in coins.items():
+        user_coins[value["Owner"]] = key
     new_coins = {}
     for coin in coins:
-        if coin in constants.COIN_HIERARCHY:
-            for h in constants.COIN_HIERARCHY[coin]:
+        if coins[coin]["Owner"] in constants.COIN_HIERARCHY:
+            for h in constants.COIN_HIERARCHY:
                 # h for hierarchy its a good var name i swear
-                if h in coins:
-                    new_coins[h] = coins[h]
+                if h in user_coins:
+                    new_coins[user_coins[h]] = coins[user_coins[h]]
 
     coins = new_coins | coins
     

@@ -73,11 +73,11 @@ to have guild id 5 use guild id 10's data instead.
 #### COIN_HIERARCHY
 COIN_HIERACHY is somewhat complicated and mostly mundane. I only made it so I can ensure that specific cryptos appear at the top of the list when listCrypto is used.
 
-To use it, simply put the name of any crypto you want to be at the top of the list, all in lowercase. If there are any caps, it will not work. The order of the list determines the order of the redirected cryptos.
+To use it, simply put the user id whose crypto you want to be at the top of the list. The order of the list determines the order of the redirected cryptos.
 
-For example, if I wanted Bobcoin and BillyCoin to be at the top of the list, I would have it like this:
+For example, if I wanted Bobcoin (belonging to user id 123) and BillyCoin (belonging to user id 422) to be at the top of the list, I would have it like this:
 
-COIN_HIERARCHY = ["bobcoin", "billycoin"]
+COIN_HIERARCHY = [123, 422]
 
 If the list of coins was normally:
 
