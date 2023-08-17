@@ -46,3 +46,8 @@ BANK_EXCEPTIONS = {1114372122509332651:915361057185357874}
 COIN_HIERARCHY = [726150411475484713]
 # change this to whatever you want to make certain users' cryptos always appear at the top of listCrypto
 # see README for full details
+
+BACKUP_PATH = "./backups"
+
+BACKUP_NUMBER = 10
+# number of backups to keep
