@@ -157,7 +157,7 @@ async def addCrypto(ctx, target="", val=None, *reason: tuple):
 @client.command()
 async def setCrypto(ctx, target="", val=None, *reason: tuple):
     if target == "" or val is None:
-        await ctx.send(f"Usage: {constants.PREFIX}setCrypto [target] [val] [reason: optional]")
+        await ctx.send(f"Usage: {constants.PREFIX}setCrypto [target] [value] [reason: optional]")
         return
     
     target_id = tc.pingtoid(target)
@@ -392,15 +392,15 @@ async def transferCrypto(ctx, arg1="", arg2="", amount=None, *reason: tuple):
     try:
         amount = int(amount)
     except ValueError:
-        await ctx.send(f"Usage: {constants.PREFIX}transferCrypto [userFrom] [userTo] [amount] [reason: optional]" +
+        await ctx.send(f"Usage: {constants.PREFIX}transferCrypto [user_from] [user_to] [amount] [reason: optional]" +
                        "\nOR\n" + 
-                       f"Usage: {constants.PREFIX}transferCrypto [cryptoName] [userTo] [amount] [reason: optional] (userFrom is you)" +
+                       f"Usage: {constants.PREFIX}transferCrypto [crypto_name] [user_to] [amount] [reason: optional] (user_from is you)" +
                        "\namount must be an integer.")
         return
     if arg1 == "" or arg2 == "" or amount is None:
-        await ctx.send(f"Usage: {constants.PREFIX}transferCrypto [userFrom] [userTo] [amount] [reason: optional]" +
+        await ctx.send(f"Usage: {constants.PREFIX}transferCrypto [user_from] [user_to] [amount] [reason: optional]" +
                        "\nOR\n" + 
-                       f"Usage: {constants.PREFIX}transferCrypto [cryptoName] [userTo] [amount] [reason: optional] (userFrom is you)")
+                       f"Usage: {constants.PREFIX}transferCrypto [cryptoName] [user_to] [amount] [reason: optional] (user_from is you)")
     if amount <= 0:
         await ctx.send("Amount must be greater than 0.")
         return
@@ -539,7 +539,7 @@ async def transferCryptoOwner(ctx, user_from_id: str, user_to_id: str, amount: i
 @client.command()
 async def renameCrypto(ctx, new_name=""):
     if new_name == "":
-        await ctx.send(f"Usage: {constants.PREFIX}renameCrypto [newName]")
+        await ctx.send(f"Usage: {constants.PREFIX}renameCrypto [new_name]")
         return
     
     if ctx.guild.id in constants.BANK_EXCEPTIONS:
@@ -600,6 +600,7 @@ async def debug(ctx):
 @client.command(aliases=['cryptoHelp'])
 async def help(ctx, command=""):
     if command.lower() in constants.HELP_INDICES:
+        print(constants.HELP_INDICES[command.lower()])
         await ctx.send(constants.HELP[constants.HELP_INDICES[command.lower()]])
     else:
         await ctx.send(constants.HELP_MSG)

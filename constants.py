@@ -15,7 +15,7 @@ HELP = [
     f'{PREFIX}setCrypto [target] [amount] [reason]: Same as addCrypto, but sets the value instead of adding.',
     f'{PREFIX}createCrypto [name]: Creates a crypto with the specified name. If you already own a crypto, you will not be able to make another. Crypto names cannot contain spaces.',
     f'{PREFIX}deleteCrypto: Deletes your crypto. Deleted cryptos can be restored with restoreCrypto.',
-    f'{PREFIX}restoreCrypto: Restores a previously deleted crypto. If you use createCrypto, after deleteCrypto, you will no longer be able to restore it.'
+    f'{PREFIX}restoreCrypto: Restores a previously deleted crypto. If you use createCrypto, after deleteCrypto, you will no longer be able to restore it.',
     f'{PREFIX}deleteUser [target]: Deletes target from your crypto.',
     f'{PREFIX}transferCrypto [user_from] [user_to] [amount] [reason]: Transfers amount of your crypto from user_from to user_to. user_from must have a sufficient amount of crypto. Reason is optional, and will be displayed on confirmation. ALT: \
 {PREFIX}transferCrypto [crypto] [user_to] [amount] [reason]: Transfers amount of crypto from you to user_to. You must have a succifient amount of the crypto. Reason is optional, and will be displayed on confirmation. OPTIONAL: -s or --show at the end will show updated standings for your crypto or the specified crypto after command is called.',
