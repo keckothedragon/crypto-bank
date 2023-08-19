@@ -391,7 +391,7 @@ async def transferCrypto(ctx, arg1="", arg2="", amount=None, *reason: tuple):
     # exception handling fun
     try:
         amount = int(amount)
-    except ValueError:
+    except (ValueError, TypeError):
         await ctx.send(f"Usage: {constants.PREFIX}transferCrypto [user_from] [user_to] [amount] [reason: optional]" +
                        "\nOR\n" + 
                        f"Usage: {constants.PREFIX}transferCrypto [crypto_name] [user_to] [amount] [reason: optional] (user_from is you)" +
@@ -600,7 +600,6 @@ async def debug(ctx):
 @client.command(aliases=['cryptoHelp'])
 async def help(ctx, command=""):
     if command.lower() in constants.HELP_INDICES:
-        print(constants.HELP_INDICES[command.lower()])
         await ctx.send(constants.HELP[constants.HELP_INDICES[command.lower()]])
     else:
         await ctx.send(constants.HELP_MSG)
