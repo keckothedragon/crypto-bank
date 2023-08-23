@@ -47,9 +47,10 @@ def backup(data: dict, id: int) -> None:
         os.mkdir(constants.BACKUP_PATH)
     if not os.path.exists(f"{constants.BACKUP_PATH}/{id}"):
         os.mkdir(f"{constants.BACKUP_PATH}/{id}")
+    
     files = os.listdir(f"{constants.BACKUP_PATH}/{id}")
+    files.sort(key=lambda x: int(x[6:-5]))
     if len(files) >= constants.BACKUP_NUMBER:
-        files.sort(key=lambda x: int(x[6:-5]))
         os.remove(f"{constants.BACKUP_PATH}/{id}/{files[0]}")
     try:
         with open(f"{constants.BACKUP_PATH}/{id}/backup{int(files[-1][6:-5]) + 1}.json", "w+") as f:
