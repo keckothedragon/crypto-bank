@@ -86,3 +86,33 @@ JoeCoin, JamesBucks, Bobcoin, SamCoin, BillyCoin
 It would become:
 
 Bobcoin, BillyCoin, JoeCoin, JamesBucks, SamCoin
+
+#### BACKUP_PATH
+Pretty self-explanatory. The location where backups are stored.
+
+#### BACKUP_NUMBER
+The number of backups to store. The backups will be stored in the location defined by BACKUP_PATH. The default for this is 10.
+
+A backup is made every time the database is written to. This happens when every command is run, with the sole exception of cryptoHelp.
+
+#### DO_FUNNY_MSG
+This is a joke feature that I added because my friends were annoying me. If someone uses listCrypto as if it was showCrypto, there is normally a special dialogue to let them know to use showCrypto instead. However, if DO_FUNNY_MSG is set to True, Crypto Bank will track every time someone uses it like this, and if they do it FUNNY_MSG_TOLERANCE times, there will be a special message.
+
+#### FUNNY_MSG_TOLERANCE
+The number of times that someone can misuse listCrypto before the special message.
+
+If DO_FUNNY_MSG is set to False, this doees not apply.
+
+#### FUNNY_MSG
+The message to display when the user misuses listCrypto FUNNY_MSG_TOLERANCE times. You can set this to whatever you want, but this is the big insult.
+
+If you are making a custom message, the string may include up to one {} to show the number of times the user misused listCrypto. If there is more than one, it will not work as intended.
+
+If DO_FUNNY_MSG is set to False, this doees not apply.
+
+#### FUNNY_MSG_DAD_BOT
+If the servers you are in also have my other bot, Dad-bot, this will add an extra reply at the end to reply to Dad-bot's reply to FUNNY_MSG. This is only applicable if FUNNY_MSG has "i'm", "im", "i am", or "i’m" in it and the reply would make sense.
+
+If the reply does not make sense or Dad-bot is not in any servers you are using this in, you can simply disable this by making it an empty set ({}).
+
+If DO_FUNNY_MSG is set to False, this does not apply.

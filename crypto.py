@@ -5,6 +5,7 @@ import os
 import constants
 import file_helper as fh
 import type_conversion as tc
+import time
 
 load_dotenv(".env")
 
@@ -325,6 +326,16 @@ async def restoreCrypto(ctx):
 @client.command()
 async def listCrypto(ctx, *args: tuple):
     if len(args) > 0:
+        if constants.DO_FUNNY_MSG:
+            misuse_count = tc.increment_misuses(ctx, ctx.author.id)
+            if misuse_count % constants.FUNNY_MSG_TOLERANCE == 0:
+                await ctx.send(constants.FUNNY_MSG.format(misuse_count))
+                if ctx.guild.id in constants.FUNNY_MSG_DAD_BOT:
+                    time.sleep(0.1)
+                    await ctx.send("ONG DAD BOT")
+                return
+                    
+
         await ctx.send(f"Usage: {constants.PREFIX}listCrypto\nTo show a specific crypto, use {constants.PREFIX}showCrypto [crypto]")
         return
     if ctx.guild.id in constants.BANK_EXCEPTIONS:

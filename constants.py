@@ -51,3 +51,18 @@ BACKUP_PATH = "./backups"
 
 BACKUP_NUMBER = 10
 # number of backups to keep
+
+DO_FUNNY_MSG = True
+# see readme
+
+FUNNY_MSG_TOLERANCE = 5
+# see readme again
+
+FUNNY_MSG = "Listen up. You've used listCrypto wrong {} times. Every single time, I've reminded you \
+how to use it. And yet, your tiny brain still can't figure out how to use it. How stupid do you have \
+to be to constantly ignore my instructions? I genuinely don't understand how time and time again, you \
+ignore me. I'm not even asking you to do anything difficult. I'm just asking you to use listCrypto \
+to list all cryptos and showCrypto to show a specific crypto. How hard is that?"
+
+FUNNY_MSG_DAD_BOT = {915361057185357874, 1114372122509332651, 946896976836976690}
+# if you have dad-bot in your server
