@@ -329,7 +329,7 @@ async def listCrypto(ctx, *args: tuple):
         if constants.DO_FUNNY_MSG:
             misuse_count = tc.increment_misuses(ctx, ctx.author.id)
             if misuse_count % constants.FUNNY_MSG_TOLERANCE == 0:
-                await ctx.send(constants.FUNNY_MSG.format(misuse_count))
+                await ctx.reply(constants.FUNNY_MSG.format(misuse_count))
                 if ctx.guild.id in constants.FUNNY_MSG_DAD_BOT:
                     time.sleep(0.1)
                     await ctx.send("ONG DAD BOT")
