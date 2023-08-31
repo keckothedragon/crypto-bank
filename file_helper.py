@@ -41,20 +41,25 @@ def pickle_write(path: str, data: set) -> None:
             print("File not found, creating file...")
             os.mkdir("/".join(path.split("/")[:-1]))
 
-def backup(data: dict, id: int, msg: str) -> None:
-    # can you tell that copilot wrote most of this?
+def backup(data: dict, id: int, path: str) -> None:
+    if "crypto" not in path:
+        # everything breaks if i try to let backup work for stuff besides crypto.json
+        return
+
     if not os.path.exists(constants.BACKUP_PATH):
         os.mkdir(constants.BACKUP_PATH)
     if not os.path.exists(f"{constants.BACKUP_PATH}/{id}"):
         os.mkdir(f"{constants.BACKUP_PATH}/{id}")
     
     files = os.listdir(f"{constants.BACKUP_PATH}/{id}")
-    files.sort(key=lambda x: int(x[7 + len(msg):-5]))
+    files.sort(key=lambda x: int(x[6:-5]))
+
     if len(files) >= constants.BACKUP_NUMBER:
         os.remove(f"{constants.BACKUP_PATH}/{id}/{files[0]}")
+
     try:
-        with open(f"{constants.BACKUP_PATH}/{id}/{msg}-backup{int(files[-1][7 + len(msg):-5]) + 1}.json", "w+") as f:
+        with open(f"{constants.BACKUP_PATH}/{id}/backup{int(files[-1][6:-5]) + 1}.json", "w+") as f:
             json.dump(data, f)
     except IndexError:
-        with open(f"{constants.BACKUP_PATH}/{id}/{msg}-backup0.json", "w+") as f:
+        with open(f"{constants.BACKUP_PATH}/{id}/backup0.json", "w+") as f:
             json.dump(data, f)
