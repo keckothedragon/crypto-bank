@@ -5,6 +5,7 @@ import os
 import constants
 import file_helper as fh
 import type_conversion as tc
+import time
 
 load_dotenv(".env")
 
@@ -157,7 +158,7 @@ async def addCrypto(ctx, target="", val=None, *reason: tuple):
 @client.command()
 async def setCrypto(ctx, target="", val=None, *reason: tuple):
     if target == "" or val is None:
-        await ctx.send(f"Usage: {constants.PREFIX}setCrypto [target] [val] [reason: optional]")
+        await ctx.send(f"Usage: {constants.PREFIX}setCrypto [target] [value] [reason: optional]")
         return
     
     target_id = tc.pingtoid(target)
@@ -325,6 +326,16 @@ async def restoreCrypto(ctx):
 @client.command()
 async def listCrypto(ctx, *args: tuple):
     if len(args) > 0:
+        if constants.DO_FUNNY_MSG:
+            misuse_count = tc.increment_misuses(ctx, ctx.author.id)
+            if misuse_count % constants.FUNNY_MSG_TOLERANCE == 0:
+                await ctx.reply(constants.FUNNY_MSG.format(misuse_count))
+                if ctx.guild.id in constants.FUNNY_MSG_DAD_BOT:
+                    time.sleep(0.1)
+                    await ctx.send("ONG DAD BOT")
+                return
+                    
+
         await ctx.send(f"Usage: {constants.PREFIX}listCrypto\nTo show a specific crypto, use {constants.PREFIX}showCrypto [crypto]")
         return
     if ctx.guild.id in constants.BANK_EXCEPTIONS:
@@ -391,16 +402,16 @@ async def transferCrypto(ctx, arg1="", arg2="", amount=None, *reason: tuple):
     # exception handling fun
     try:
         amount = int(amount)
-    except ValueError:
-        await ctx.send(f"Usage: {constants.PREFIX}transferCrypto [userFrom] [userTo] [amount] [reason: optional]" +
+    except (ValueError, TypeError):
+        await ctx.send(f"Usage: {constants.PREFIX}transferCrypto [user_from] [user_to] [amount] [reason: optional]" +
                        "\nOR\n" + 
-                       f"Usage: {constants.PREFIX}transferCrypto [cryptoName] [userTo] [amount] [reason: optional] (userFrom is you)" +
+                       f"Usage: {constants.PREFIX}transferCrypto [crypto_name] [user_to] [amount] [reason: optional] (user_from is you)" +
                        "\namount must be an integer.")
         return
     if arg1 == "" or arg2 == "" or amount is None:
-        await ctx.send(f"Usage: {constants.PREFIX}transferCrypto [userFrom] [userTo] [amount] [reason: optional]" +
+        await ctx.send(f"Usage: {constants.PREFIX}transferCrypto [user_from] [user_to] [amount] [reason: optional]" +
                        "\nOR\n" + 
-                       f"Usage: {constants.PREFIX}transferCrypto [cryptoName] [userTo] [amount] [reason: optional] (userFrom is you)")
+                       f"Usage: {constants.PREFIX}transferCrypto [cryptoName] [user_to] [amount] [reason: optional] (user_from is you)")
     if amount <= 0:
         await ctx.send("Amount must be greater than 0.")
         return
@@ -539,7 +550,7 @@ async def transferCryptoOwner(ctx, user_from_id: str, user_to_id: str, amount: i
 @client.command()
 async def renameCrypto(ctx, new_name=""):
     if new_name == "":
-        await ctx.send(f"Usage: {constants.PREFIX}renameCrypto [newName]")
+        await ctx.send(f"Usage: {constants.PREFIX}renameCrypto [new_name]")
         return
     
     if ctx.guild.id in constants.BANK_EXCEPTIONS:
@@ -596,6 +607,15 @@ async def debug(ctx):
     fh.json_write(constants.DATA_PATH + str(id) + "-crypto.json", coins)
 
     await ctx.send(f"Updated {changes} names. Encountered {exceptions} exceptions.")
+
+@client.command()
+async def disable(ctx):
+    if ctx.author.id != constants.OWNER:
+        await ctx.send("You do not have permission to use this command.")
+        return
+    await ctx.send("Disabling...")
+    await client.close()
+    exit()
 
 @client.command(aliases=['cryptoHelp'])
 async def help(ctx, command=""):

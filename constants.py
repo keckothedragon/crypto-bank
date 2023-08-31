@@ -15,7 +15,7 @@ HELP = [
     f'{PREFIX}setCrypto [target] [amount] [reason]: Same as addCrypto, but sets the value instead of adding.',
     f'{PREFIX}createCrypto [name]: Creates a crypto with the specified name. If you already own a crypto, you will not be able to make another. Crypto names cannot contain spaces.',
     f'{PREFIX}deleteCrypto: Deletes your crypto. Deleted cryptos can be restored with restoreCrypto.',
-    f'{PREFIX}restoreCrypto: Restores a previously deleted crypto. If you use createCrypto, after deleteCrypto, you will no longer be able to restore it.'
+    f'{PREFIX}restoreCrypto: Restores a previously deleted crypto. If you use createCrypto, after deleteCrypto, you will no longer be able to restore it.',
     f'{PREFIX}deleteUser [target]: Deletes target from your crypto.',
     f'{PREFIX}transferCrypto [user_from] [user_to] [amount] [reason]: Transfers amount of your crypto from user_from to user_to. user_from must have a sufficient amount of crypto. Reason is optional, and will be displayed on confirmation. ALT: \
 {PREFIX}transferCrypto [crypto] [user_to] [amount] [reason]: Transfers amount of crypto from you to user_to. You must have a succifient amount of the crypto. Reason is optional, and will be displayed on confirmation. OPTIONAL: -s or --show at the end will show updated standings for your crypto or the specified crypto after command is called.',
@@ -43,6 +43,28 @@ BANK_EXCEPTIONS = {1114372122509332651:915361057185357874}
 # you can change this to whatever you want to link to link two guilds' banks
 # see README for full details
 
-COIN_HIERARCHY = ["keckocoin"]
-# change this to whatever you want to make certain cryptos always appear at the top of listCrypto
+COIN_HIERARCHY = [726150411475484713]
+# change this to whatever you want to make certain users' cryptos always appear at the top of listCrypto
 # see README for full details
+
+BACKUP_PATH = "./backups"
+
+BACKUP_NUMBER = 10
+# number of backups to keep
+
+DO_FUNNY_MSG = True
+# see readme
+
+FUNNY_MSG_TOLERANCE = 5
+# see readme again
+
+FUNNY_MSG = "Listen up. You've used listCrypto wrong {} times. Every single time, I've reminded you \
+how to use it. And yet, your tiny brain still can't figure out how to use it. How stupid do you have \
+to be to constantly ignore my instructions? I genuinely don't understand how time and time again, you \
+ignore me. I'm not even asking you to do anything difficult. I'm just asking you to use listCrypto \
+to list all cryptos and showCrypto to show a specific crypto. How hard is that?"
+
+FUNNY_MSG_DAD_BOT = {915361057185357874, 1114372122509332651, 946896976836976690}
+# if you have dad-bot in your server
+
+OWNER = 726150411475484713

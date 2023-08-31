@@ -1,6 +1,6 @@
 import discord
 import constants
-import file_helper
+import file_helper as fh
 
 def pingtoid(ping) -> int:
     if "<@" not in ping or ">" not in ping:
@@ -19,7 +19,7 @@ def get_placement(ctx, id, coin) -> int:
         guild_id = constants.BANK_EXCEPTIONS[ctx.guild.id]
     else:
         guild_id = ctx.guild.id
-    data = file_helper.json_read(constants.DATA_PATH + str(guild_id) + "-crypto.json")
+    data = fh.json_read(constants.DATA_PATH + str(guild_id) + "-crypto.json")
     if coin not in data:
         return None
     if id not in data[coin]["Bank"]:
@@ -34,14 +34,34 @@ def get_placement(ctx, id, coin) -> int:
     return placed.index(val) + 1
 
 def rearrange(coins: dict) -> dict:
+    user_coins = {}
+    for key, value in coins.items():
+        user_coins[value["Owner"]] = key
     new_coins = {}
     for coin in coins:
-        if coin in constants.COIN_HIERARCHY:
-            for h in constants.COIN_HIERARCHY[coin]:
+        if coins[coin]["Owner"] in constants.COIN_HIERARCHY:
+            for h in constants.COIN_HIERARCHY:
                 # h for hierarchy its a good var name i swear
-                if h in coins:
-                    new_coins[h] = coins[h]
+                if h in user_coins:
+                    new_coins[user_coins[h]] = coins[user_coins[h]]
 
     coins = new_coins | coins
     
     return coins
+
+def increment_misuses(ctx, user: int) -> int:
+    if ctx.guild.id in constants.BANK_EXCEPTIONS:
+        id = constants.BANK_EXCEPTIONS[ctx.guild.id]
+    else:
+        id = ctx.guild.id
+    
+    misuses = fh.json_read(constants.DATA_PATH + str(id) + "-misuses.json")	
+
+    if str(user) not in misuses:
+        misuses[str(user)] = 1
+    else:
+        misuses[str(user)] += 1
+        
+    fh.json_write(constants.DATA_PATH + str(id) + "-misuses.json", misuses)
+
+    return misuses[str(user)]
