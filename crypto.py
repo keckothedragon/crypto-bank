@@ -608,6 +608,15 @@ async def debug(ctx):
 
     await ctx.send(f"Updated {changes} names. Encountered {exceptions} exceptions.")
 
+@client.command()
+async def disable(ctx):
+    if ctx.author.id != constants.OWNER:
+        await ctx.send("You do not have permission to use this command.")
+        return
+    await ctx.send("Disabling...")
+    await client.close()
+    exit()
+
 @client.command(aliases=['cryptoHelp'])
 async def help(ctx, command=""):
     if command.lower() in constants.HELP_INDICES:

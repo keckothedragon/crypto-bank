@@ -65,6 +65,3 @@ def increment_misuses(ctx, user: int) -> int:
     fh.json_write(constants.DATA_PATH + str(id) + "-misuses.json", misuses)
 
     return misuses[str(user)]
-
-
-

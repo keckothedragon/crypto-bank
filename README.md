@@ -47,10 +47,15 @@ renameCrypto takes one argument, the new name of the crypto. It will automatical
 ### debug
 This is only useful if for some reason you have an old database version and need to update. If you have just downloaded the code, there is no need to run this. If you have an old database version, you need to run update_database.py, then run this command to fetch names for all users.
 
+### disable
+This is used to disable Crypto Bank from Discord directly rather than having to manually stop the code. This can only be done by the owner of the code, set by constants.OWNER.
+
 ### cryptoHelp
 cryptoHelp takes an optional argument: the command to show help for. If no argument is passed, cryptoHelp shows an abridged version of these explanations. If a command is passed, it will show help for that specific command.
 
 ## Miscellaneous stuff
+### Backups
+Backups are automatically saved in the backups folder at the root of wherever you run your code. By default, there will be backups for the last 10 commands run that write to crypto.json, which is pretty much all of them.
 ### Constants
 You should not have to change too much about constants.py, but there are a few variables you may want to change. The only variables you should modify are DATA_PATH as mentioned earlier, PREFIX, BANK_EXCEPTIONS, and COIN_HIERARCHY.
 
@@ -116,3 +121,6 @@ If the servers you are in also have my other bot, Dad-bot, this will add an extr
 If the reply does not make sense or Dad-bot is not in any servers you are using this in, you can simply disable this by making it an empty set ({}).
 
 If DO_FUNNY_MSG is set to False, this does not apply.
+
+#### OWNER
+OWNER is used for the disable command so that only you can disable the bot. See disable for more details.
