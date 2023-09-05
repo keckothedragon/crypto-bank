@@ -68,3 +68,7 @@ FUNNY_MSG_DAD_BOT = {915361057185357874, 1114372122509332651, 946896976836976690
 # if you have dad-bot in your server
 
 OWNER = 726150411475484713
+
+BOYCOTT = {}
+
+BOYCOTT_MSG = "Crypto Bank is boycotting this server due to Keckothedragon's loss of perms."

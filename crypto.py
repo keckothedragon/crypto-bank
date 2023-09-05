@@ -15,6 +15,10 @@ client.remove_command("help") # it freaks out if i put it at the bottom so its g
 
 @client.command()
 async def showCrypto(ctx, crypto=""):
+    if ctx.guild.id in constants.BOYCOTT:
+        await ctx.send(constants.BOYCOTT_MSG)
+        return
+    
     if crypto == "":
         await ctx.send(f"Usage: {constants.PREFIX}showCrypto [name of crypto]")
         return
@@ -86,6 +90,10 @@ async def showCrypto(ctx, crypto=""):
 
 @client.command()
 async def addCrypto(ctx, target="", val=None, *reason: tuple):
+    if ctx.guild.id in constants.BOYCOTT:
+        await ctx.send(constants.BOYCOTT_MSG)
+        return
+    
     if target == "" or val is None:
         await ctx.send(f"Usage: {constants.PREFIX}addCrypto: [target] [value] [reason: optional]")
         return
@@ -157,6 +165,10 @@ async def addCrypto(ctx, target="", val=None, *reason: tuple):
 
 @client.command()
 async def setCrypto(ctx, target="", val=None, *reason: tuple):
+    if ctx.guild.id in constants.BOYCOTT:
+        await ctx.send(constants.BOYCOTT_MSG)
+        return
+    
     if target == "" or val is None:
         await ctx.send(f"Usage: {constants.PREFIX}setCrypto [target] [value] [reason: optional]")
         return
@@ -226,6 +238,10 @@ async def setCrypto(ctx, target="", val=None, *reason: tuple):
 
 @client.command()
 async def createCrypto(ctx, crypto_name=""):
+    if ctx.guild.id in constants.BOYCOTT:
+        await ctx.send(constants.BOYCOTT_MSG)
+        return
+    
     if crypto_name == "":
         await ctx.send(f"Usage: {constants.PREFIX}createCrypto [name]")
         return
@@ -261,6 +277,10 @@ async def createCrypto(ctx, crypto_name=""):
 
 @client.command()
 async def deleteCrypto(ctx):
+    if ctx.guild.id in constants.BOYCOTT:
+        await ctx.send(constants.BOYCOTT_MSG)
+        return
+    
     if ctx.guild.id in constants.BANK_EXCEPTIONS:
         id = constants.BANK_EXCEPTIONS[ctx.guild.id]
     else:
@@ -294,6 +314,10 @@ async def deleteCrypto(ctx):
 
 @client.command()
 async def restoreCrypto(ctx):
+    if ctx.guild.id in constants.BOYCOTT:
+        await ctx.send(constants.BOYCOTT_MSG)
+        return
+    
     if ctx.guild.id in constants.BANK_EXCEPTIONS:
         id = constants.BANK_EXCEPTIONS[ctx.guild.id]
     else:
@@ -325,6 +349,10 @@ async def restoreCrypto(ctx):
 
 @client.command()
 async def listCrypto(ctx, *args: tuple):
+    if ctx.guild.id in constants.BOYCOTT:
+        await ctx.send(constants.BOYCOTT_MSG)
+        return
+    
     if len(args) > 0:
         if constants.DO_FUNNY_MSG:
             misuse_count = tc.increment_misuses(ctx, ctx.author.id)
@@ -361,6 +389,10 @@ async def listCrypto(ctx, *args: tuple):
 
 @client.command()
 async def deleteUser(ctx, target=""):
+    if ctx.guild.id in constants.BOYCOTT:
+        await ctx.send(constants.BOYCOTT_MSG)
+        return
+    
     if target == "":
         await ctx.send(f"Usage: {constants.PREFIX}deleteUser [target]")
         return
@@ -399,6 +431,10 @@ async def deleteUser(ctx, target=""):
 
 @client.command()
 async def transferCrypto(ctx, arg1="", arg2="", amount=None, *reason: tuple):
+    if ctx.guild.id in constants.BOYCOTT:
+        await ctx.send(constants.BOYCOTT_MSG)
+        return
+    
     # exception handling fun
     try:
         amount = int(amount)
@@ -422,6 +458,10 @@ async def transferCrypto(ctx, arg1="", arg2="", amount=None, *reason: tuple):
         await transferCryptoUser(ctx, arg1, tc.pingtoid(arg2), amount, reason)
 
 async def transferCryptoUser(ctx, crypto_name: str, user_to_id: str, amount: int, reason: tuple):
+    if ctx.guild.id in constants.BOYCOTT:
+        await ctx.send(constants.BOYCOTT_MSG)
+        return
+    
     user_from_id = ctx.author.id
 
     user_to_name = tc.idtoname(ctx, user_to_id)
@@ -485,6 +525,10 @@ You now have {coins[crypto_name]['Bank'][str(user_from_id)]['Amt']}. (Rank #{tc.
         await showCrypto(ctx, crypto_name)
 
 async def transferCryptoOwner(ctx, user_from_id: str, user_to_id: str, amount: int, reason: tuple):
+    if ctx.guild.id in constants.BOYCOTT:
+        await ctx.send(constants.BOYCOTT_MSG)
+        return
+    
     user_from_name = tc.idtoname(ctx, user_from_id)
     user_to_name = tc.idtoname(ctx, user_to_id)
 
@@ -549,6 +593,10 @@ async def transferCryptoOwner(ctx, user_from_id: str, user_to_id: str, amount: i
     
 @client.command()
 async def renameCrypto(ctx, new_name=""):
+    if ctx.guild.id in constants.BOYCOTT:
+        await ctx.send(constants.BOYCOTT_MSG)
+        return
+    
     if new_name == "":
         await ctx.send(f"Usage: {constants.PREFIX}renameCrypto [new_name]")
         return
@@ -579,6 +627,10 @@ async def renameCrypto(ctx, new_name=""):
 
 @client.command()
 async def debug(ctx):
+    if ctx.guild.id in constants.BOYCOTT:
+        await ctx.send(constants.BOYCOTT_MSG)
+        return
+    
     if ctx.guild.id in constants.BANK_EXCEPTIONS:
         id = constants.BANK_EXCEPTIONS[ctx.guild.id]
     else:
@@ -610,6 +662,10 @@ async def debug(ctx):
 
 @client.command(aliases=['cryptoHelp'])
 async def help(ctx, command=""):
+    if ctx.guild.id in constants.BOYCOTT:
+        await ctx.send(constants.BOYCOTT_MSG)
+        return
+    
     if command.lower() in constants.HELP_INDICES:
         await ctx.send(constants.HELP[constants.HELP_INDICES[command.lower()]])
     else:
